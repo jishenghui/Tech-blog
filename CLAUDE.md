@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 项目现状
 
-**M1/M2/M3 已完成；M4 Astro POC 与固定页 JSON API 已完成（2026-11-07）。** `backend/` 已包含 Gin + GORM(SQLite)、JWT 鉴权、目录/文章/标签 CRUD、Markdown 渲染、七牛云图片上传、ZIP 导入、固定页 JSON API（projects/profile/todos）与公开读接口；`frontend/` 已创建 Astro POC（`/poc/`），`admin/` 尚未创建。开始任何工作前先读：
+**M1/M2/M3/M4 已完成（2026-11-07）。** `backend/` 已包含 Gin + GORM(SQLite)、JWT 鉴权、目录/文章/标签 CRUD、Markdown 渲染、七牛云图片上传、ZIP 导入、固定页 JSON API（projects/profile/todos）与公开读接口；`frontend/` 已实现 Astro 全站 SSG（首页/项目/技术栈/目录/文章/待办/搜索/404/sitemap/RSS），`admin/` 尚未创建。开始任何工作前先读：
 
 - `README.md` — 项目概览与架构图
 - `doc/个人博客需求文档.md` — PRD、技术选型、实施步骤
@@ -37,6 +37,7 @@ doc/        需求、设计、开发计划
 
 **关键架构决策（不要轻易改变）：**
 - 前台 Astro **全站 SSG（含文章详情）**，构建产物直传七牛 Kodo，主域 CNAME 到七牛 CDN；ECS 的 1Mbps 只服务 API、后台 SPA 和构建取数。若把前台资源留在 ECS，100 并发会打满带宽——这是整个方案的前提。
+- 前台客户端取数只保留两处：搜索页调公开搜索 API、404 兜底按 slug 调公开文章 API；文章/目录/项目/简历均在构建时静态输出。KaTeX/Mermaid 仅在文章包含对应标记时动态加载，Chroma CSS 由 `frontend/src/styles/chroma.css` 提供。
 - 发布类写操作由后端防抖触发 GitHub Actions `repository_dispatch` 重建；构建成功才上传 Kodo 并刷新受影响 URL，失败保留旧站。
 - 新文章在重建完成前由 Kodo `404.html` 按 slug 调公开 API 临时渲染，仅兜底：`noindex`、不写 CDN。
 - 数据库用 SQLite（WAL）+ GORM + `github.com/glebarez/sqlite` 纯 Go 驱动，**不使用 CGO**；后端用 Go 而非 Node，都是为了 2G 内存。
@@ -79,14 +80,17 @@ CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o blog-api .
 
 首次运行前从 `deploy/env/backend.env.example` 复制出 `backend/.env`，填写 `JWT_SECRET` 与 `ADMIN_PASSWORD_HASH`。首次启动会自动建表、创建管理员与固定一级目录。图片上传/ZIP 导入还需填写 `QINIU_ACCESS_KEY`、`QINIU_SECRET_KEY`、`QINIU_ASSET_BUCKET`、`QINIU_ASSET_DOMAIN`；未填写时上传接口返回 503，其余功能正常。`QINIU_ASSET_DOMAIN` 为绑定到资源 bucket 的 CDN 域名：七牛云测试域名通常只支持 `http://`（30 天回收），自定义 CDN 域名使用 `https://`。
 
-前台（M4 POC 已可运行，Node 22.23.4）：
+前台（M4 已完成，Node 22.23.4）：
 
 ```bash
 cd frontend
 npm install
-npm run dev        # POC: http://localhost:4321/poc/
-npm run build      # 产物在 frontend/dist
+npm run dev        # http://localhost:4321/（POC 仍在 /poc/）
+npm run build      # 构建时通过公开 API 取数，产物在 frontend/dist
+npm run check
 ```
+
+本地 `.env` 从 `deploy/env/frontend.env.example` 复制，至少设置 `PUBLIC_API_BASE_URL=http://localhost:8080`。`npm run build` 需要后端已启动；项目内 `.npmrc` 使用 npmmirror。
 
 后台（待 M5）：
 
@@ -116,4 +120,4 @@ cd admin && npm install && npm run build
 
 ## 下一步
 
-M1/M2/M3 已完成，M4 Astro POC 与固定页 JSON API 已完成。下一步：完成正式 M4 页面并消费 `projects`/`profile`/`todos` API；后台可视化编辑器（`admin/`）留到 M5。任何架构变更先更新设计文档与 CLAUDE.md，再写代码。
+M1/M2/M3/M4 已完成。下一步：M5 搭建 Vue 3 后台可视化编辑（文章/目录/资源/固定页 JSON）；M6 发布流水线与 ECS 部署；M7 安全与上线。任何架构变更先更新设计文档与 CLAUDE.md，再写代码。
