@@ -154,7 +154,7 @@ function select(index: number) {
   position: relative;
   aspect-ratio: 16 / 10;
   overflow: hidden;
-  background: #0b0f14;
+  background: var(--code-bg);
 }
 
 .award-image::after {

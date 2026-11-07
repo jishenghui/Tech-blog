@@ -3,6 +3,7 @@ import { apiGet } from '../lib/api'
 import type { NavNode } from '../lib/types'
 import '../styles/global.css'
 import '../styles/chroma.css'
+import '../styles/chroma-light.css'
 
 interface Props {
   title?: string
@@ -26,6 +27,8 @@ const pageTitle = title === siteName ? title : `${title} · ${siteName}`
 const site = Astro.site ?? new URL('https://www.example.com')
 const canonical = new URL(Astro.url.pathname, site).toString()
 const ogImage = image ? new URL(image, site).toString() : undefined
+const siteLatitude = Number(import.meta.env.PUBLIC_SITE_LAT || 31.2304)
+const siteLongitude = Number(import.meta.env.PUBLIC_SITE_LNG || 121.4737)
 
 function hrefFor(node: NavNode): string {
   switch (node.page_key) {
@@ -48,11 +51,11 @@ function childrenOf(node: NavNode): NavNode[] {
 ---
 
 <!doctype html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-theme="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#07090d" />
+    <meta id="theme-color" name="theme-color" content="#07090d" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>{pageTitle}</title>
     <meta name="description" content={description} />
@@ -65,6 +68,116 @@ function childrenOf(node: NavNode): NavNode[] {
     {ogImage && <meta property="og:image" content={ogImage} />}
     <meta name="twitter:card" content="summary_large_image" />
     <link rel="alternate" type="application/rss+xml" title="Tech Blog RSS" href="/rss.xml" />
+    <script is:inline define:vars={{ siteLatitude, siteLongitude }}>
+      (() => {
+        const root = document.documentElement
+        const labels = { auto: '自动', light: '浅色', dark: '深色' }
+        const lat = Number(siteLatitude)
+        const lng = Number(siteLongitude)
+
+        const isDaylight = (date) => {
+          if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+            return null
+          }
+          const rad = Math.PI / 180
+          const start = Date.UTC(date.getUTCFullYear(), 0, 0)
+          const day = Math.floor(
+            (Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()) - start) / 86400000,
+          )
+          const gamma = (2 * Math.PI / 365) * (day - 1 + (date.getUTCHours() - 12) / 24)
+          const eqtime =
+            229.18 *
+            (0.000075 +
+              0.001868 * Math.cos(gamma) -
+              0.032077 * Math.sin(gamma) -
+              0.014615 * Math.cos(2 * gamma) -
+              0.040849 * Math.sin(2 * gamma))
+          const decl =
+            0.006918 -
+            0.399912 * Math.cos(gamma) +
+            0.070257 * Math.sin(gamma) -
+            0.006758 * Math.cos(2 * gamma) +
+            0.000907 * Math.sin(2 * gamma) -
+            0.002697 * Math.cos(3 * gamma) +
+            0.00148 * Math.sin(3 * gamma)
+          const cosHa =
+            Math.cos(90.833 * rad) / (Math.cos(lat * rad) * Math.cos(decl)) -
+            Math.tan(lat * rad) * Math.tan(decl)
+          if (cosHa > 1) {
+            return false
+          }
+          if (cosHa < -1) {
+            return true
+          }
+          const ha = Math.acos(cosHa) / rad
+          const sunrise = 720 - 4 * (lng + ha) - eqtime
+          const sunset = 720 - 4 * (lng - ha) - eqtime
+          const minutes =
+            date.getUTCHours() * 60 + date.getUTCMinutes() + date.getUTCSeconds() / 60
+          return minutes >= sunrise && minutes < sunset
+        }
+
+        const resolveTheme = (mode) => {
+          if (mode === 'light' || mode === 'dark') {
+            return mode
+          }
+          const daylight = isDaylight(new Date())
+          if (daylight !== null) {
+            return daylight ? 'light' : 'dark'
+          }
+          return window.matchMedia?.('(prefers-color-scheme: light)').matches ? 'light' : 'dark'
+        }
+
+        const apply = (mode, persist) => {
+          const theme = resolveTheme(mode)
+          root.dataset.theme = theme
+          root.dataset.themeMode = mode
+          root.style.colorScheme = theme
+          const meta = document.querySelector('meta[name="theme-color"]')
+          if (meta) {
+            meta.setAttribute('content', theme === 'light' ? '#f7f8f6' : '#07090d')
+          }
+          if (persist) {
+            try {
+              localStorage.setItem('blog-theme-mode', mode)
+            } catch {
+              // 忽略隐私模式下的 localStorage 异常。
+            }
+          }
+        }
+
+        let stored = null
+        try {
+          stored = localStorage.getItem('blog-theme-mode')
+        } catch {
+          // 忽略隐私模式下的 localStorage 异常。
+        }
+        const initialMode = stored === 'light' || stored === 'dark' || stored === 'auto' ? stored : 'auto'
+        apply(initialMode, false)
+
+        document.addEventListener('DOMContentLoaded', () => {
+          const button = document.getElementById('theme-toggle')
+          if (!button) {
+            return
+          }
+          const render = () => {
+            const mode = root.dataset.themeMode || 'auto'
+            const label = labels[mode] || labels.auto
+            button.textContent = label
+            button.setAttribute('aria-label', `主题：${label}（点击切换）`)
+            button.title = `主题：${label}（点击切换）`
+          }
+          render()
+          button.addEventListener('click', () => {
+            const current = root.dataset.themeMode || 'auto'
+            const next = current === 'auto' ? 'light' : current === 'light' ? 'dark' : 'auto'
+            apply(next, true)
+            render()
+            window.dispatchEvent(new CustomEvent('themechange', { detail: root.dataset.theme }))
+          })
+        })
+      })()
+    </script>
   </head>
   <body>
     <header class="site-header">
@@ -94,6 +207,7 @@ function childrenOf(node: NavNode): NavNode[] {
           }
           <li class="nav-item"><a href="/search/">搜索</a></li>
         </ul>
+        <button id="theme-toggle" class="theme-toggle" type="button" aria-label="切换主题">自动</button>
         <details class="mobile-menu">
           <summary>菜单</summary>
           <div class="mobile-menu-panel">

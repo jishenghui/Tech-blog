@@ -1,4 +1,5 @@
-:root {
+:root,
+:root[data-theme='dark'] {
   color-scheme: dark;
   --bg: #07090d;
   --panel: #11161f;
@@ -13,8 +14,60 @@
   --danger: #ff7b72;
   --radius: 18px;
   --shadow: 0 24px 70px rgba(0, 0, 0, 0.28);
+  --header-bg: rgba(7, 9, 13, 0.74);
+  --panel-translucent: rgba(13, 17, 23, 0.98);
+  --chip-bg: rgba(17, 22, 31, 0.66);
+  --note-bg: rgba(121, 192, 255, 0.045);
+  --note-border: rgba(121, 192, 255, 0.2);
+  --grid-line: rgba(255, 255, 255, 0.018);
+  --glow-1: rgba(121, 192, 255, 0.09);
+  --glow-2: rgba(126, 231, 135, 0.06);
+  --selection: rgba(126, 231, 135, 0.24);
+  --code-bg: #0d1117;
+  --code-bar-bg: #0f141b;
+  --arch-glow: rgba(121, 192, 255, 0.08);
+  --accent-soft: rgba(126, 231, 135, 0.08);
+  --accent-soft-hover: rgba(126, 231, 135, 0.14);
+  --accent-soft-border: rgba(126, 231, 135, 0.4);
+  --accent-2-soft: rgba(121, 192, 255, 0.08);
+  --accent-2-soft-border: rgba(121, 192, 255, 0.4);
+  --accent-3-soft-border: rgba(255, 166, 87, 0.35);
   --font-sans: "Noto Sans SC", "Microsoft YaHei", "PingFang SC", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-mono: "SF Mono", "Cascadia Code", "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+  --bg: #f7f8f6;
+  --panel: #ffffff;
+  --panel-2: #f0f3f6;
+  --border: #d8dee4;
+  --border-strong: #b8c2cc;
+  --text: #1f2328;
+  --muted: #57606a;
+  --accent: #1a7f37;
+  --accent-2: #0969da;
+  --accent-3: #9a6700;
+  --danger: #cf222e;
+  --shadow: 0 24px 70px rgba(31, 35, 40, 0.1);
+  --header-bg: rgba(247, 248, 246, 0.82);
+  --panel-translucent: rgba(255, 255, 255, 0.98);
+  --chip-bg: rgba(255, 255, 255, 0.72);
+  --note-bg: rgba(9, 105, 218, 0.05);
+  --note-border: rgba(9, 105, 218, 0.2);
+  --grid-line: rgba(31, 35, 40, 0.035);
+  --glow-1: rgba(9, 105, 218, 0.06);
+  --glow-2: rgba(26, 127, 55, 0.05);
+  --selection: rgba(9, 105, 218, 0.18);
+  --code-bg: #f6f8fa;
+  --code-bar-bg: #eef1f4;
+  --arch-glow: rgba(9, 105, 218, 0.05);
+  --accent-soft: rgba(26, 127, 55, 0.08);
+  --accent-soft-hover: rgba(26, 127, 55, 0.14);
+  --accent-soft-border: rgba(26, 127, 55, 0.35);
+  --accent-2-soft: rgba(9, 105, 218, 0.08);
+  --accent-2-soft-border: rgba(9, 105, 218, 0.35);
+  --accent-3-soft-border: rgba(154, 103, 0, 0.35);
 }
 
 * {
@@ -35,8 +88,8 @@ body {
   min-height: 100vh;
   overflow-x: hidden;
   background:
-    radial-gradient(circle at 12% -4%, rgba(121, 192, 255, 0.09), transparent 32rem),
-    radial-gradient(circle at 88% 4%, rgba(126, 231, 135, 0.06), transparent 30rem),
+    radial-gradient(circle at 12% -4%, var(--glow-1), transparent 32rem),
+    radial-gradient(circle at 88% 4%, var(--glow-2), transparent 30rem),
     var(--bg);
   color: var(--text);
   font-family: var(--font-sans);
@@ -49,8 +102,8 @@ body::before {
   z-index: 0;
   inset: 0;
   background-image:
-    linear-gradient(rgba(255, 255, 255, 0.018) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.018) 1px, transparent 1px);
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
   background-size: 48px 48px;
   content: "";
   pointer-events: none;
@@ -58,8 +111,8 @@ body::before {
 }
 
 ::selection {
-  background: rgba(126, 231, 135, 0.24);
-  color: #f0fff4;
+  background: var(--selection);
+  color: var(--text);
 }
 
 a {
@@ -88,8 +141,8 @@ video {
   position: sticky;
   top: 0;
   z-index: 20;
-  border-bottom: 1px solid rgba(35, 43, 56, 0.72);
-  background: rgba(7, 9, 13, 0.74);
+  border-bottom: 1px solid var(--border);
+  background: var(--header-bg);
   backdrop-filter: blur(16px);
 }
 
@@ -115,7 +168,7 @@ video {
 
 .poc-badge {
   padding: 3px 7px;
-  border: 1px solid rgba(255, 166, 87, 0.35);
+  border: 1px solid var(--accent-3-soft-border);
   border-radius: 999px;
   color: var(--accent-3);
   font-family: var(--font-mono);
@@ -164,7 +217,7 @@ video {
   padding: 8px;
   border: 1px solid var(--border);
   border-radius: 12px;
-  background: rgba(13, 17, 23, 0.98);
+  background: var(--panel-translucent);
   box-shadow: var(--shadow);
   list-style: none;
   opacity: 0;
@@ -195,6 +248,34 @@ video {
 .nav-dropdown a:hover,
 .nav-dropdown a:focus-visible {
   background: var(--panel-2);
+  color: var(--text);
+  outline: none;
+}
+
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  margin-left: 10px;
+  padding: 7px 9px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  cursor: pointer;
+  transition:
+    border-color 160ms ease,
+    color 160ms ease,
+    background 160ms ease;
+}
+
+.theme-toggle:hover,
+.theme-toggle:focus-visible {
+  border-color: var(--accent-2);
+  background: var(--accent-2-soft);
   color: var(--text);
   outline: none;
 }
@@ -230,7 +311,7 @@ video {
   padding: 10px;
   border: 1px solid var(--border);
   border-radius: 12px;
-  background: rgba(13, 17, 23, 0.99);
+  background: var(--panel-translucent);
   box-shadow: var(--shadow);
 }
 
@@ -311,7 +392,7 @@ video {
   padding: 6px 10px;
   border: 1px solid var(--border);
   border-radius: 999px;
-  background: rgba(17, 22, 31, 0.66);
+  background: var(--chip-bg);
   color: var(--muted);
   font-family: var(--font-mono);
   font-size: 10px;
@@ -324,9 +405,9 @@ video {
   max-width: 700px;
   margin-top: 28px;
   padding: 12px 14px;
-  border: 1px solid rgba(121, 192, 255, 0.2);
+  border: 1px solid var(--note-border);
   border-radius: 12px;
-  background: rgba(121, 192, 255, 0.045);
+  background: var(--note-bg);
   color: var(--muted);
   font-size: 13px;
   line-height: 1.7;
@@ -395,9 +476,9 @@ video {
   gap: 10px;
   margin-top: 28px;
   padding: 11px 18px;
-  border: 1px solid rgba(126, 231, 135, 0.4);
+  border: 1px solid var(--accent-soft-border);
   border-radius: 10px;
-  background: rgba(126, 231, 135, 0.08);
+  background: var(--accent-soft);
   color: var(--accent);
   font-size: 14px;
   font-weight: 650;
@@ -408,7 +489,7 @@ video {
 }
 
 .button:hover {
-  background: rgba(126, 231, 135, 0.14);
+  background: var(--accent-soft-hover);
   transform: translateY(-1px);
 }
 
@@ -443,6 +524,10 @@ video {
 
   .desktop-nav {
     display: none;
+  }
+
+  .theme-toggle {
+    margin-left: 0;
   }
 
   .mobile-menu {
@@ -616,7 +701,7 @@ video {
 /* ---------- 文章正文 ---------- */
 
 .prose {
-  color: #d7dee8;
+  color: var(--text);
   font-size: 16px;
   line-height: 1.9;
   overflow-wrap: break-word;
@@ -666,7 +751,7 @@ video {
 }
 
 .prose strong {
-  color: #f0f6fc;
+  color: var(--text);
 }
 
 .prose ul,
@@ -682,7 +767,7 @@ video {
   margin: 1.6em 0;
   padding: 0.8em 1.2em;
   border-left: 2px solid var(--accent);
-  background: rgba(126, 231, 135, 0.05);
+  background: var(--accent-soft);
   color: var(--muted);
 }
 
@@ -733,7 +818,7 @@ video {
   overflow: auto;
   border: 1px solid var(--border);
   border-radius: 12px;
-  background: #0d1117;
+  background: var(--code-bg);
 }
 
 .prose pre code {
@@ -758,7 +843,7 @@ video {
 }
 
 .prose .chroma {
-  background: #0d1117;
+  background: var(--code-bg);
 }
 
 .prose hr {
@@ -821,7 +906,7 @@ video {
 }
 
 .project-sidebar a.active {
-  background: rgba(126, 231, 135, 0.1);
+  background: var(--accent-soft);
   color: var(--accent);
 }
 
@@ -954,7 +1039,7 @@ video {
 
 .pagination .current {
   border-color: var(--accent);
-  background: rgba(126, 231, 135, 0.08);
+  background: var(--accent-soft);
   color: var(--accent);
 }
 
@@ -1133,7 +1218,7 @@ video {
 
 .todo-item.done .todo-check {
   border-color: var(--accent);
-  background: rgba(126, 231, 135, 0.1);
+  background: var(--accent-soft);
 }
 
 .todo-item.done .todo-content {
@@ -1178,9 +1263,9 @@ video {
 
 .search-button {
   padding: 12px 18px;
-  border: 1px solid rgba(121, 192, 255, 0.4);
+  border: 1px solid var(--accent-2-soft-border);
   border-radius: 9px;
-  background: rgba(121, 192, 255, 0.08);
+  background: var(--accent-2-soft);
   color: var(--accent-2);
   font-size: 13px;
   cursor: pointer;

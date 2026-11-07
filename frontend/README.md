@@ -59,6 +59,15 @@ SITE_URL=http://localhost:4321
 - sitemap 与 RSS 使用构建时数据生成；sitemap 排除 `/poc/`、搜索页与 404。
 - 交互岛屿使用 `client:visible`，共享 Vue runtime；普通文章/列表页不加载 Vue。
 
+## 主题
+
+- 默认 `auto`：按站点坐标计算日出/日落，白天浅色、夜间深色；内联脚本在首屏渲染前设置 `data-theme`，避免闪烁。
+- 页头按钮循环 `自动 → 浅色 → 深色 → 自动`，手动选择写入 `localStorage`（`blog-theme-mode`）；清除后恢复自动。
+- 坐标来自 `PUBLIC_SITE_LAT` / `PUBLIC_SITE_LNG`，默认上海（31.2304 / 121.4737）。换城市时更新 `frontend/.env` 与 `deploy/env/frontend.env.example`。
+- 全部在浏览器完成，不调用 API、不增加服务器开销；坐标非法时回退 `prefers-color-scheme`。
+- 代码高亮：`chroma.css`（深色）+ `chroma-light.css`（浅色，作用域为 `[data-theme='light']`）；Mermaid 按页面初始主题选择 `default` / `dark`。
+- 切换主题后，已经渲染的 Mermaid 图不会自动重绘；下次加载会按当前主题渲染。`/poc/` 原型页固定深色。
+
 ## 性能备注
 
 - 页面主体为静态 HTML；文章页只有搜索/404 之外的必要脚本，KaTeX/Mermaid 按需加载。

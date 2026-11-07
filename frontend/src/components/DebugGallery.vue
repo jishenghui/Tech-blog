@@ -146,7 +146,7 @@ function pauseVideo(event: Event) {
   overflow: hidden;
   border: 1px solid var(--border);
   border-radius: 10px;
-  background: #0b0f14;
+  background: var(--code-bg);
 }
 
 .debug-thumb img,
@@ -162,7 +162,7 @@ function pauseVideo(event: Event) {
   left: 8px;
   bottom: 8px;
   padding: 3px 7px;
-  border: 1px solid rgba(121, 192, 255, 0.45);
+  border: 1px solid var(--accent-2-soft-border);
   border-radius: 999px;
   background: rgba(13, 17, 23, 0.82);
   color: var(--accent-2);
@@ -204,7 +204,7 @@ function pauseVideo(event: Event) {
 .tag {
   flex: none;
   padding: 5px 10px;
-  border: 1px solid rgba(121, 192, 255, 0.35);
+  border: 1px solid var(--accent-2-soft-border);
   border-radius: 999px;
   color: var(--accent-2);
   font-family: var(--font-mono);

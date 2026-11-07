@@ -90,7 +90,8 @@ const hasMermaid = article.content_html.includes('class="mermaid"')
           }
           if (document.querySelector('.mermaid')) {
             const { default: mermaid } = await import('mermaid')
-            mermaid.initialize({ startOnLoad: false, theme: 'dark', securityLevel: 'strict' })
+            const theme = document.documentElement.dataset.theme === 'light' ? 'default' : 'dark'
+            mermaid.initialize({ startOnLoad: false, theme, securityLevel: 'strict' })
             await mermaid.run({ querySelector: '.mermaid' })
           }
         } catch (error) {

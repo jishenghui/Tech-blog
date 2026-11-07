@@ -35,7 +35,7 @@ const lines = computed(() =>
 <template>
   <div class="architecture">
     <div class="arch-canvas">
-      <svg viewBox="0 0 900 470" role="group" aria-label="项目架构图">
+      <svg viewBox="0 0 800 470" role="group" aria-label="项目架构图">
         <defs>
           <marker
             id="arch-arrow"
@@ -106,15 +106,15 @@ const lines = computed(() =>
   border: 1px solid var(--border);
   border-radius: 18px;
   background:
-    linear-gradient(180deg, rgba(17, 22, 31, 0.92), rgba(13, 17, 23, 0.96)),
-    radial-gradient(circle at 20% 10%, rgba(121, 192, 255, 0.08), transparent 40%);
+    radial-gradient(circle at 20% 10%, var(--arch-glow), transparent 40%),
+    var(--panel);
   box-shadow: var(--shadow);
 }
 
 .arch-canvas svg {
   display: block;
   width: 100%;
-  min-width: 720px;
+  min-width: 0;
   height: auto;
 }
 
@@ -130,7 +130,7 @@ const lines = computed(() =>
 }
 
 .arch-node rect {
-  fill: #11161f;
+  fill: var(--panel-2);
   stroke: var(--border-strong);
   stroke-width: 1.4;
   transition:
@@ -142,7 +142,7 @@ const lines = computed(() =>
 .arch-node text {
   fill: var(--text);
   font-family: var(--font-sans);
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 650;
   letter-spacing: -0.01em;
   pointer-events: none;
@@ -171,7 +171,7 @@ const lines = computed(() =>
 .arch-node:hover rect,
 .arch-node:focus rect,
 .arch-node.active rect {
-  fill: #171e29;
+  fill: var(--panel);
   stroke-width: 2.2;
   filter: drop-shadow(0 0 16px rgba(121, 192, 255, 0.16));
 }
