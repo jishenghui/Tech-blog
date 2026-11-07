@@ -1,6 +1,6 @@
 # Tech-blog
 
-个人技术博客与项目展示平台。**M1/M2 已完成，下一步 M3（资源与压缩包导入）。**
+个人技术博客与项目展示平台。**M1/M2/M3 已完成，下一步 M4（Astro 前台）。**
 
 ## 文档
 
@@ -31,7 +31,7 @@
 ## 目录结构
 
 ```
-backend/    Go + Gin + GORM(SQLite)，鉴权/目录/文章/标签/公开 API，单二进制 blog-api
+backend/    Go + Gin + GORM(SQLite)，鉴权/目录/文章/标签/资源/导入/公开 API，单二进制 blog-api
 frontend/   Astro 前台（SSG，待 M4 创建）
 admin/      Vue 3 后台 SPA（待 M5 创建）
 deploy/     nginx.conf、systemd 等部署模板

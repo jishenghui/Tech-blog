@@ -234,7 +234,7 @@ CREATE TABLE settings (          -- 站点名、备案号、CDN 域名、首页�
 | `articles.search_text` | 保存时从标题与纯文本正文生成 |
 | `directories.article_count` | 文章发布/取消发布/移动/删除时，在**同一事务**内对源目录与目标目录增减 |
 | `tags.article_count` | 文章标签变更、发布状态变更时同事务维护 |
-| `assets.ref_count` | 文章保存时解析正文中的 CDN 地址统计引用 |
+| `assets.ref_count` | 文章创建/更新/删除时解析正文中的 CDN 地址重算；全量重算接口同时重算 |
 | `profile.resume_html` | 保存简历时渲染 |
 
 提供 `POST /api/v1/admin/maintenance/recalc`（或一条 CLI 命令）全量重算以上字段，用于数据修复。
@@ -320,9 +320,11 @@ CREATE TABLE settings (          -- 站点名、备案号、CDN 域名、首页�
 | GET/POST/PUT/DELETE | `/api/v1/admin/tags[/{id}]` | 标签管理 |
 | POST | `/api/v1/admin/assets` | 图片上传（multipart），返回 CDN URL；按 `sha256` 去重 |
 | DELETE | `/api/v1/admin/assets/{id}` | 删除资源（`ref_count>0` 时拒绝或仅解除引用） |
-| POST | `/api/v1/admin/imports/zip` | 上传压缩包，参数 `file`、`directory_id`；同步完成或返回 job_id |
+| POST | `/api/v1/admin/imports/zip` | 上传压缩包，参数 `file`、`directory_id`、可选 `publish`；同步完成后返回任务详情 |
 | GET | `/api/v1/admin/imports` | 导入历史 |
 | GET | `/api/v1/admin/imports/{id}` | 单个导入任务状态与统计 |
+
+> 图片上传按 `sha256` 去重；未配置七牛云时返回 503。资源删除仅在 `ref_count=0` 时软删除数据库记录，不删除 Kodo 对象。
 
 ### 3.7 后台：项目、首页、待办、维护
 
@@ -363,6 +365,8 @@ CREATE TABLE settings (          -- 站点名、备案号、CDN 域名、首页�
 6. 正则替换 md 中的 `!\[...\]\(\.?/?images/(...)\)` 为 CDN 地址；替换不了的图片计入失败清单但不中断。
 7. 每个 md 创建一篇文章：标题取首个一级标题，缺省用文件名；`source='zip'`；挂到目标二级目录；默认草稿或按参数发布。
 8. 更新 `import_jobs` 统计与 `finished_at`，清理临时目录。
+
+> **M3 实现说明**：导入同步执行；结构校验、图片上传或文章创建失败会写入 `import_jobs`（`status=failed`）并返回任务详情。限制：图片 10MB、ZIP 50MB、解压后 200MB、条目 2000 个；Zip Slip 同时拒绝绝对路径、Windows 盘符和符号链接。图片按 `sha256` 去重；真实上传需在 `backend/.env` 配置 `QINIU_ACCESS_KEY`、`QINIU_SECRET_KEY`、`QINIU_ASSET_BUCKET`、`QINIU_ASSET_DOMAIN`。
 
 ### 3.10 前台渲染方案（已定：方案 A）
 

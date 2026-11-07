@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 项目现状
 
-**M1/M2 已完成（2026-11-07）。** `backend/` 已包含 Gin + GORM(SQLite)、JWT 鉴权、目录/文章/标签 CRUD、Markdown 渲染与公开读接口；`frontend/`、`admin/` 尚未创建。开始任何工作前先读：
+**M1/M2/M3 已完成（2026-11-07）。** `backend/` 已包含 Gin + GORM(SQLite)、JWT 鉴权、目录/文章/标签 CRUD、Markdown 渲染、七牛云图片上传、ZIP 导入与公开读接口；`frontend/`、`admin/` 尚未创建。开始任何工作前先读：
 
 - `README.md` — 项目概览与架构图
 - `doc/个人博客需求文档.md` — PRD、技术选型、实施步骤
@@ -55,11 +55,14 @@ doc/        需求、设计、开发计划
 - 解压后根层级只允许一个 `images/` 子目录加若干 `.md`；出现其他文件/目录即失败。
 - 若根层级只有单一文件夹（重复压缩），需**递归下探**直到满足上述结构或触底报错（不能只剥一层）。
 - `images/` 中图片上传七牛云；md 中的 `![](./images/xxx.jpg)` 需替换为 CDN 绝对地址。
-- 必须防 Zip Slip（拒绝 `..` 与绝对路径条目）。
+- 必须防 Zip Slip（拒绝 `..` 与绝对路径条目，同时拒绝 Windows 盘符与符号链接）。
+- 导入同步执行，失败写入 `import_jobs` 并返回 `status=failed`；限制：图片 10MB、ZIP 50MB、解压后 200MB、条目 2000 个。
 
 **技术栈页**：按文章 tag 聚合，列出全部 tag 及每个 tag 下的文章数量，可筛选。
 
 **Markdown 渲染**：后端 goldmark + Chroma 生成 `content_html`；数学公式输出 MathJax/KaTeX 兼容的 `<span class="math ...">\(...\)</span>`，Mermaid 输出 `<pre class="mermaid">`，由前台按需加载 KaTeX/Mermaid 与 Chroma CSS 完成最终展示。`search_text` 与摘要不包含代码块。
+
+**资源与导入**：图片按 `sha256` 去重上传七牛云；`assets.ref_count` 按文章正文中的资源 URL 重算。删除资源仅在 `ref_count=0` 时软删除数据库记录，不删除 Kodo 对象。
 
 ## 构建与运行
 
@@ -72,7 +75,7 @@ go run . -hash-password 你的密码      # 生成 ADMIN_PASSWORD_HASH
 CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o blog-api .
 ```
 
-首次运行前从 `deploy/env/backend.env.example` 复制出 `backend/.env`，填写 `JWT_SECRET` 与 `ADMIN_PASSWORD_HASH`。首次启动会自动建表、创建管理员与固定一级目录。
+首次运行前从 `deploy/env/backend.env.example` 复制出 `backend/.env`，填写 `JWT_SECRET` 与 `ADMIN_PASSWORD_HASH`。首次启动会自动建表、创建管理员与固定一级目录。图片上传/ZIP 导入还需填写 `QINIU_ACCESS_KEY`、`QINIU_SECRET_KEY`、`QINIU_ASSET_BUCKET`、`QINIU_ASSET_DOMAIN`；未填写时上传接口返回 503，其余功能正常。
 
 前台与后台（待 M4/M5）：
 
@@ -103,4 +106,4 @@ cd admin && npm install && npm run build
 
 ## 下一步
 
-M1/M2 已完成（`backend/`）。下一步按 `doc/开发计划.md` 的 **M3** 实现七牛云图片上传与 ZIP 导入；不要同时铺开前台/后台。任何架构变更先更新设计文档与 CLAUDE.md，再写代码。
+M1/M2/M3 已完成（`backend/`）。下一步按 `doc/开发计划.md` 的 **M4** 搭建 Astro 前台；不要同时铺开后台。任何架构变更先更新设计文档与 CLAUDE.md，再写代码。
