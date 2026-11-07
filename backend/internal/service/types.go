@@ -114,6 +114,19 @@ type AdminArticleDetail struct {
 	TagIDs      []uint `json:"tag_ids"`
 }
 
+// AssetView 是上传资源的公开表示。
+type AssetView struct {
+	ID           uint   `json:"id"`
+	URL          string `json:"url"`
+	ObjectKey    string `json:"object_key"`
+	Bucket       string `json:"bucket"`
+	OriginalName string `json:"original_name"`
+	Mime         string `json:"mime"`
+	Size         int64  `json:"size"`
+	Sha256       string `json:"sha256"`
+	RefCount     int    `json:"ref_count"`
+}
+
 // ToDirectoryDetail 供 handler 构造公开目录响应。
 func ToDirectoryDetail(dir model.Directory) DirectoryDetail {
 	return toDirectoryDetail(dir)
@@ -184,6 +197,20 @@ func toTagViews(tags []model.Tag) []TagView {
 		views = append(views, toTagView(tag))
 	}
 	return views
+}
+
+func toAssetView(asset model.Asset) AssetView {
+	return AssetView{
+		ID:           asset.ID,
+		URL:          asset.URL,
+		ObjectKey:    asset.ObjectKey,
+		Bucket:       asset.Bucket,
+		OriginalName: asset.OriginalName,
+		Mime:         asset.Mime,
+		Size:         asset.Size,
+		Sha256:       asset.Sha256,
+		RefCount:     asset.RefCount,
+	}
 }
 
 func toArticleSummary(article model.Article, tags []model.Tag, directory *model.Directory) ArticleSummary {

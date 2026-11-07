@@ -134,6 +134,15 @@ func (c *Config) IsProduction() bool {
 	return c.AppEnv == EnvProduction
 }
 
+// QiniuConfigured 表示图片上传所需的四项配置是否齐全。
+// 未配置时服务仍可启动，但上传接口会返回 503。
+func (c *Config) QiniuConfigured() bool {
+	return c.QiniuAccessKey != "" &&
+		c.QiniuSecretKey != "" &&
+		c.QiniuAssetBucket != "" &&
+		c.QiniuAssetDomain != ""
+}
+
 func env(key, fallback string) string {
 	if v, ok := os.LookupEnv(key); ok && strings.TrimSpace(v) != "" {
 		return strings.TrimSpace(v)

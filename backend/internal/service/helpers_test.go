@@ -1,6 +1,7 @@
 package service_test
 
 import (
+	"context"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -16,11 +17,28 @@ import (
 	"blog-api/internal/service"
 )
 
+type fakeUploader struct {
+	base     string
+	calls    int
+	lastKey  string
+	lastMime string
+}
+
+func (f *fakeUploader) Upload(_ context.Context, key string, _ []byte, mime string) (string, error) {
+	f.calls++
+	f.lastKey = key
+	f.lastMime = mime
+	return f.base + "/" + key, nil
+}
+
 type testEnv struct {
 	db       *gorm.DB
 	dirs     *service.DirectoryService
 	articles *service.ArticleService
 	tags     *service.TagService
+	assets   *service.AssetService
+	imports  *service.ImportService
+	uploader *fakeUploader
 }
 
 func newTestEnv(t *testing.T) *testEnv {
@@ -60,11 +78,19 @@ func newTestEnv(t *testing.T) *testEnv {
 	}
 
 	renderer := service.NewMarkdownRenderer()
+	articleService := service.NewArticleService(db, renderer)
+	uploader := &fakeUploader{base: "https://cdn.test"}
+	assetService := service.NewAssetService(db, uploader, "test-bucket")
+	importService := service.NewImportService(db, assetService, articleService)
+
 	return &testEnv{
 		db:       db,
 		dirs:     service.NewDirectoryService(db),
-		articles: service.NewArticleService(db, renderer),
+		articles: articleService,
 		tags:     service.NewTagService(db),
+		assets:   assetService,
+		imports:  importService,
+		uploader: uploader,
 	}
 }
 

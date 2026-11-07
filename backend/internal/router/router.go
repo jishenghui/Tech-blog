@@ -1,6 +1,8 @@
 package router
 
 import (
+	"log"
+
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 
@@ -10,10 +12,22 @@ import (
 	"blog-api/internal/middleware"
 	"blog-api/internal/response"
 	"blog-api/internal/service"
+	"blog-api/internal/storage"
 )
 
 // New 组装 HTTP 路由。公开读接口与后台写接口共用 /api/v1 前缀。
 func New(cfg *config.Config, db *gorm.DB, tokens *auth.TokenManager) *gin.Engine {
+	var uploader service.ObjectUploader
+	if cfg.QiniuConfigured() {
+		uploader = storage.NewQiniuUploader(cfg)
+	} else {
+		log.Println("七牛云未配置：图片上传与 ZIP 导入暂不可用（请在 backend/.env 填写 QINIU_ACCESS_KEY、QINIU_SECRET_KEY、QINIU_ASSET_BUCKET、QINIU_ASSET_DOMAIN）")
+	}
+	return NewWithUploader(cfg, db, tokens, uploader)
+}
+
+// NewWithUploader 允许测试注入假的对象存储上传器。
+func NewWithUploader(cfg *config.Config, db *gorm.DB, tokens *auth.TokenManager, uploader service.ObjectUploader) *gin.Engine {
 	if cfg.IsProduction() {
 		gin.SetMode(gin.ReleaseMode)
 	}
@@ -28,10 +42,14 @@ func New(cfg *config.Config, db *gorm.DB, tokens *auth.TokenManager) *gin.Engine
 	directoryService := service.NewDirectoryService(db)
 	articleService := service.NewArticleService(db, renderer)
 	tagService := service.NewTagService(db)
+	assetService := service.NewAssetService(db, uploader, cfg.QiniuAssetBucket)
+	importService := service.NewImportService(db, assetService, articleService)
 
 	directoryHandler := handler.NewDirectoryHandler(directoryService, articleService)
 	articleHandler := handler.NewArticleHandler(articleService)
 	tagHandler := handler.NewTagHandler(tagService, articleService)
+	assetHandler := handler.NewAssetHandler(assetService)
+	importHandler := handler.NewImportHandler(importService)
 	maintenanceHandler := handler.NewMaintenanceHandler(articleService)
 
 	r.GET("/healthz", healthHandler.Check)
@@ -79,6 +97,13 @@ func New(cfg *config.Config, db *gorm.DB, tokens *auth.TokenManager) *gin.Engine
 			admin.POST("/tags", tagHandler.Create)
 			admin.PUT("/tags/:id", tagHandler.Update)
 			admin.DELETE("/tags/:id", tagHandler.Delete)
+
+			admin.POST("/assets", assetHandler.Upload)
+			admin.DELETE("/assets/:id", assetHandler.Delete)
+
+			admin.POST("/imports/zip", importHandler.UploadZip)
+			admin.GET("/imports", importHandler.List)
+			admin.GET("/imports/:id", importHandler.Detail)
 
 			admin.POST("/maintenance/recalc", maintenanceHandler.Recalc)
 		}

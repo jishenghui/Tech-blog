@@ -47,3 +47,7 @@ func Conflict(message string) *Error {
 func Internal(message string, err error) *Error {
 	return &Error{Status: http.StatusInternalServerError, Code: 50001, Message: message, Err: err}
 }
+
+func Unavailable(message string) *Error {
+	return &Error{Status: http.StatusServiceUnavailable, Code: 50301, Message: message}
+}

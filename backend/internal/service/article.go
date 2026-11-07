@@ -65,9 +65,20 @@ type RecalcResult struct {
 	Articles    int `json:"articles"`
 	Directories int `json:"directories"`
 	Tags        int `json:"tags"`
+	Assets      int `json:"assets"`
+}
+
+// CreateArticleOptions 供 ZIP 导入等内部调用设置来源信息。
+type CreateArticleOptions struct {
+	Source     string
+	SourceFile string
 }
 
 func (s *ArticleService) Create(in CreateArticleInput) (*model.Article, error) {
+	return s.CreateWithOptions(in, CreateArticleOptions{})
+}
+
+func (s *ArticleService) CreateWithOptions(in CreateArticleInput, opts CreateArticleOptions) (*model.Article, error) {
 	title := strings.TrimSpace(in.Title)
 	if title == "" {
 		return nil, apperr.BadRequest("文章标题不能为空")
@@ -103,6 +114,11 @@ func (s *ArticleService) Create(in CreateArticleInput) (*model.Article, error) {
 			return err
 		}
 
+		source := opts.Source
+		if source == "" {
+			source = "editor"
+		}
+
 		directoryID := in.DirectoryID
 		article = model.Article{
 			DirectoryID: &directoryID,
@@ -114,13 +130,17 @@ func (s *ArticleService) Create(in CreateArticleInput) (*model.Article, error) {
 			CoverURL:    strings.TrimSpace(in.CoverURL),
 			Status:      ArticleStatusDraft,
 			IsPinned:    in.IsPinned,
-			Source:      "editor",
+			Source:      source,
+			SourceFile:  opts.SourceFile,
 			WordCount:   rendered.WordCount,
 			ReadingTime: rendered.ReadingTime,
 			SearchText:  rendered.SearchText,
 		}
 		if err := tx.Create(&article).Error; err != nil {
 			return apperr.Internal("创建文章失败", err)
+		}
+		if err := syncAssetRefs(tx, in.ContentMD); err != nil {
+			return err
 		}
 		return replaceArticleTags(tx, article.ID, tagIDs, false)
 	})
@@ -148,6 +168,7 @@ func (s *ArticleService) Update(id uint, in UpdateArticleInput) (*model.Article,
 			}
 		}
 
+		oldContent := article.ContentMD
 		content := article.ContentMD
 		if in.ContentMD != nil {
 			content = *in.ContentMD
@@ -200,6 +221,9 @@ func (s *ArticleService) Update(id uint, in UpdateArticleInput) (*model.Article,
 		if err := tx.Model(&article).Updates(updates).Error; err != nil {
 			return apperr.Internal("保存文章失败", err)
 		}
+		if err := syncAssetRefs(tx, oldContent, content); err != nil {
+			return err
+		}
 
 		article.Title = title
 		article.Slug = slug
@@ -245,7 +269,7 @@ func (s *ArticleService) Delete(id uint) error {
 		if err := tx.Delete(&article).Error; err != nil {
 			return apperr.Internal("删除文章失败", err)
 		}
-		return nil
+		return syncAssetRefs(tx, article.ContentMD)
 	})
 }
 
@@ -578,6 +602,12 @@ func (s *ArticleService) Recalc() (*RecalcResult, error) {
 			}
 		}
 		result.Tags = len(tagCounts)
+
+		assets, err := recalcAssetRefs(tx)
+		if err != nil {
+			return err
+		}
+		result.Assets = assets
 		return nil
 	})
 	if err != nil {
