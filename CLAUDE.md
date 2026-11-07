@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 项目现状
 
-**M1 后端骨架已完成（2026-11-07）。** `backend/` 已包含 Gin + GORM(SQLite) 骨架、JWT 鉴权、统一响应信封与固定目录种子；`frontend/`、`admin/` 尚未创建。开始任何工作前先读：
+**M1/M2 已完成（2026-11-07）。** `backend/` 已包含 Gin + GORM(SQLite)、JWT 鉴权、目录/文章/标签 CRUD、Markdown 渲染与公开读接口；`frontend/`、`admin/` 尚未创建。开始任何工作前先读：
 
 - `README.md` — 项目概览与架构图
 - `doc/个人博客需求文档.md` — PRD、技术选型、实施步骤
@@ -49,7 +49,7 @@ doc/        需求、设计、开发计划
 
 **解散语义**（容易搞错，按原文实现）：
 - 解散一级目录：其下的二级目录整体归入一级目录"其他"，文件保留在各自原二级目录中。
-- 解散二级目录：其下文件归入"其他"一级目录下的"其他"二级目录。
+- 解散二级目录：其下文件归入"其他"一级目录下的"其他"二级目录。该兜底目录 slug 固定为 `other-other`（slug 全局唯一），由解散操作自动创建，不能被解散。
 
 **压缩包导入**：
 - 解压后根层级只允许一个 `images/` 子目录加若干 `.md`；出现其他文件/目录即失败。
@@ -58,6 +58,8 @@ doc/        需求、设计、开发计划
 - 必须防 Zip Slip（拒绝 `..` 与绝对路径条目）。
 
 **技术栈页**：按文章 tag 聚合，列出全部 tag 及每个 tag 下的文章数量，可筛选。
+
+**Markdown 渲染**：后端 goldmark + Chroma 生成 `content_html`；数学公式输出 MathJax/KaTeX 兼容的 `<span class="math ...">\(...\)</span>`，Mermaid 输出 `<pre class="mermaid">`，由前台按需加载 KaTeX/Mermaid 与 Chroma CSS 完成最终展示。`search_text` 与摘要不包含代码块。
 
 ## 构建与运行
 
@@ -101,4 +103,4 @@ cd admin && npm install && npm run build
 
 ## 下一步
 
-M1 后端骨架已完成（`backend/`）。下一步按 `doc/开发计划.md` 的 **M2** 实现目录/文章 CRUD、Markdown 渲染与公开读接口；不要同时铺开前台/后台。任何架构变更先更新设计文档与 CLAUDE.md，再写代码。
+M1/M2 已完成（`backend/`）。下一步按 `doc/开发计划.md` 的 **M3** 实现七牛云图片上传与 ZIP 导入；不要同时铺开前台/后台。任何架构变更先更新设计文档与 CLAUDE.md，再写代码。

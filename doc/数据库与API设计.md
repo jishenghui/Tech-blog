@@ -374,6 +374,8 @@ CREATE TABLE settings (          -- 站点名、备案号、CDN 域名、首页�
 - 构建完成并上传后，按受影响 URL 清单刷新 CDN（见第五节）。
 - 兜底：新文章在重建完成前被访问时，静态站返回 404 页；404 页按 URL 中的 slug 调用公开 API 临时渲染正文。该页 `noindex`，不写 CDN、不承担 SEO。
 
+> **Markdown 渲染实现（M2 已落地）**：后端使用 goldmark + Chroma 生成 `content_html`；数学公式输出 MathJax/KaTeX 兼容的 `<span class="math ...">\(...\)</span>`，Mermaid 输出 `<pre class="mermaid">`；由 Astro 文章页按需加载 KaTeX/Mermaid 与 Chroma CSS 完成最终展示，避免在后端引入 Node 或无头浏览器。
+
 ---
 
 ## 四、索引与容量说明
