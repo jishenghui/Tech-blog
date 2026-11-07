@@ -37,7 +37,8 @@ doc/        需求、设计、开发计划
 
 **关键架构决策（不要轻易改变）：**
 - 前台 Astro **全站 SSG（含文章详情）**，构建产物直传七牛 Kodo，主域 CNAME 到七牛 CDN；ECS 的 1Mbps 只服务 API、后台 SPA 和构建取数。若把前台资源留在 ECS，100 并发会打满带宽——这是整个方案的前提。
-- 前台客户端取数只保留两处：搜索页调公开搜索 API、404 兜底按 slug 调公开文章 API；文章/目录/项目/简历均在构建时静态输出。KaTeX/Mermaid 仅在文章包含对应标记时动态加载，Chroma CSS 由 `frontend/src/styles/chroma.css` 提供。
+- 前台客户端取数只保留两处：搜索页调公开搜索 API、404 兜底按 slug 调公开文章 API；文章/目录/项目/简历均在构建时静态输出。KaTeX/Mermaid 仅在文章包含对应标记时动态加载，Chroma 深/浅 CSS 由 `frontend/src/styles/chroma*.css` 提供。
+- 主题在浏览器完成：CSS 变量双主题 + 内联脚本按 `PUBLIC_SITE_LAT/LNG` 计算日出日落，默认自动，页头按钮可切换自动/浅色/深色并写入 localStorage；不调用 API，不增加服务器开销。`/poc/` 原型页固定深色。
 - 发布类写操作由后端防抖触发 GitHub Actions `repository_dispatch` 重建；构建成功才上传 Kodo 并刷新受影响 URL，失败保留旧站。
 - 新文章在重建完成前由 Kodo `404.html` 按 slug 调公开 API 临时渲染，仅兜底：`noindex`、不写 CDN。
 - 数据库用 SQLite（WAL）+ GORM + `github.com/glebarez/sqlite` 纯 Go 驱动，**不使用 CGO**；后端用 Go 而非 Node，都是为了 2G 内存。
@@ -90,7 +91,7 @@ npm run build      # 构建时通过公开 API 取数，产物在 frontend/dist
 npm run check
 ```
 
-本地 `.env` 从 `deploy/env/frontend.env.example` 复制，至少设置 `PUBLIC_API_BASE_URL=http://localhost:8080`。`npm run build` 需要后端已启动；项目内 `.npmrc` 使用 npmmirror。
+本地 `.env` 从 `deploy/env/frontend.env.example` 复制，至少设置 `PUBLIC_API_BASE_URL=http://localhost:8080`；日出日落主题坐标用 `PUBLIC_SITE_LAT`/`PUBLIC_SITE_LNG`（默认上海）。`npm run build` 需要后端已启动；项目内 `.npmrc` 使用 npmmirror。
 
 后台（待 M5）：
 

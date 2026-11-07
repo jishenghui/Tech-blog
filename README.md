@@ -70,7 +70,7 @@ npm run dev        # http://localhost:4321/
 npm run build      # 构建时通过 API 取数，产物在 dist/
 ```
 
-前台已实现首页/简历、项目、技术栈、目录与文章、待办、搜索、404 兜底、sitemap 与 RSS。三类固定页交互已集成到首页与项目页；交互原型仍可在 `/poc/` 查看。详细说明见 [frontend/README.md](frontend/README.md)。
+前台已实现首页/简历、项目、技术栈、目录与文章、待办、搜索、404 兜底、sitemap 与 RSS，并支持浅色/深色与按日出日落自动切换的主题。三类固定页交互已集成到首页与项目页；交互原型仍可在 `/poc/` 查看。详细说明见 [frontend/README.md](frontend/README.md)。
 
 ## 部署
 
