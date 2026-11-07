@@ -18,6 +18,7 @@ const (
 	CodeUnauthorized = 40101
 	CodeForbidden    = 40301
 	CodeNotFound     = 40401
+	CodeConflict     = 40901
 	CodeInternal     = 50001
 	CodeUnavailable  = 50301
 )
@@ -44,6 +45,10 @@ func Forbidden(c *gin.Context, message string) {
 
 func NotFound(c *gin.Context, message string) {
 	Error(c, http.StatusNotFound, CodeNotFound, message)
+}
+
+func Conflict(c *gin.Context, message string) {
+	Error(c, http.StatusConflict, CodeConflict, message)
 }
 
 func Internal(c *gin.Context, message string) {
