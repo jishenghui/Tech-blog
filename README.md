@@ -1,6 +1,6 @@
 # Tech-blog
 
-个人技术博客与项目展示平台。**当前处于规划完成、尚未开始编码的阶段。**
+个人技术博客与项目展示平台。**M1 后端骨架已完成，下一步 M2（目录与文章）。**
 
 ## 文档
 
@@ -28,12 +28,12 @@
 - **后台**：Vue 3 + Vite + Pinia + Vditor；与前台共用 `/api/v1`，写接口统一 `/api/v1/admin` + JWT。
 - **数据库**：SQLite（WAL）+ GORM + `github.com/glebarez/sqlite` 纯 Go 驱动，无需 CGO。
 
-## 计划目录结构
+## 目录结构
 
 ```
-backend/    Go + Gin + GORM(SQLite)，单二进制 blog-api
-frontend/   Astro 前台（SSG）
-admin/      Vue 3 后台 SPA
+backend/    Go + Gin + GORM(SQLite)，已可运行，单二进制 blog-api
+frontend/   Astro 前台（SSG，待 M4 创建）
+admin/      Vue 3 后台 SPA（待 M5 创建）
 deploy/     nginx.conf、systemd 等部署模板
 doc/        需求、设计、开发计划
 ```
@@ -46,9 +46,16 @@ doc/        需求、设计、开发计划
 - 无需 GCC（纯 Go SQLite）；qshell 仅在 CI 中使用
 - GitHub 认证（PAT 或 Git Credential Manager）
 
-## 快速开始
+## 快速开始（后端）
 
-代码尚未脚手架化，先按 [开发计划](doc/开发计划.md) 的 M1 开始。本地环境审计与下一台机器的依赖见开发计划第 4 节。
+```bash
+cd backend
+cp ../deploy/env/backend.env.example .env    # 首次；填写 JWT_SECRET
+go run . -hash-password 你的密码             # 把输出填入 .env 的 ADMIN_PASSWORD_HASH
+go run .
+```
+
+首次启动会自动建表、创建唯一管理员与固定一级目录，并在 `./data/blog.db` 创建 SQLite（WAL）数据库。接口与后续里程碑见 [开发计划](doc/开发计划.md)；本地环境审计见开发计划第 4 节。
 
 ## 部署
 

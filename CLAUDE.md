@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 项目现状
 
-**规划完成，尚未开始编码。** 仓库当前只有文档、部署模板与 README；`backend/`、`frontend/`、`admin/` 尚未创建。开始任何工作前先读：
+**M1 后端骨架已完成（2026-11-07）。** `backend/` 已包含 Gin + GORM(SQLite) 骨架、JWT 鉴权、统一响应信封与固定目录种子；`frontend/`、`admin/` 尚未创建。开始任何工作前先读：
 
 - `README.md` — 项目概览与架构图
 - `doc/个人博客需求文档.md` — PRD、技术选型、实施步骤
@@ -12,6 +12,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `doc/开发计划.md` — 里程碑、环境、配置项、开放问题
 
 Git：`main` 分支，remote `origin` = `https://github.com/jishenghui/Tech-blog.git`；本仓库提交身份为 `jishenghui <jishenghui@users.noreply.github.com>`。
+
+## Git 提交规范
+
+- **所有 commit message 必须使用中文描述**，标题与正文均是；类型前缀（`feat:`、`fix:`、`docs:`、`chore:` 等）可以保留英文，但冒号后的描述必须为中文。
+- 示例：`docs: 更新迁移后开发机环境审计`、`feat: 搭建后端骨架与 JWT 鉴权`。
+- 不要使用纯英文句子作为提交说明。
+- **任务完成并验证通过后直接提交**，无需再次询问；默认提交到当前分支（`main`）。
+- 提交前确认测试通过，且 `.env`、SQLite 数据库、编译产物等未进入版本库。
 
 ## 项目目标与目标架构
 
@@ -51,10 +59,22 @@ doc/        需求、设计、开发计划
 
 **技术栈页**：按文章 tag 聚合，列出全部 tag 及每个 tag 下的文章数量，可筛选。
 
-## 构建与运行（计划，代码就绪后以此为准）
+## 构建与运行
+
+后端（已可运行）：
 
 ```bash
-cd backend && CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o blog-api .
+cd backend
+go run .                              # 本地开发，读取 backend/.env
+go run . -hash-password 你的密码      # 生成 ADMIN_PASSWORD_HASH
+CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o blog-api .
+```
+
+首次运行前从 `deploy/env/backend.env.example` 复制出 `backend/.env`，填写 `JWT_SECRET` 与 `ADMIN_PASSWORD_HASH`。首次启动会自动建表、创建管理员与固定一级目录。
+
+前台与后台（待 M4/M5）：
+
+```bash
 cd frontend && npm install && npm run build
 cd admin && npm install && npm run build
 ```
@@ -63,7 +83,7 @@ cd admin && npm install && npm run build
 
 ## 环境
 
-本机审计（2026-11-07）：Node v22.16.0、npm 10.9.2、Docker 29.7.2、Compose v5.4.0 已安装；**Go、GCC、make、gh 未安装**。下一台开发机需要 Go 稳定版（≥1.23）、Node 22 LTS、Docker；纯 Go SQLite 不需要 GCC；qshell 只在 CI 中使用。详见 `doc/开发计划.md` 第 4 节。
+本机审计（2026-11-07，迁移后的新开发机）：Go 1.27.3（winget 安装，`GOPROXY=https://goproxy.cn,direct`）、Node v24.13.0（nvm 管理，另装有 22.23.4）、npm 11.6.2、Docker 29.9.2、Compose v5.6.1、Git 2.55.0、winget 1.29.380。GCC、make、gh、qshell 未安装：纯 Go SQLite 不需要 GCC；make/qshell 本项目不需要（qshell 只在 CI 用）；gh 可选（`winget install --id GitHub.cli -e`）。本地开发建议 `nvm use 22.23.4` 对齐 CI 的 Node 22。详见 `doc/开发计划.md` 第 4 节。
 
 ## 安全与限流（部署层约定）
 
@@ -81,4 +101,4 @@ cd admin && npm install && npm run build
 
 ## 下一步
 
-按 `doc/开发计划.md` 的 **M1** 从 `backend/` 开始，不要同时铺开前台/后台。任何架构变更先更新设计文档与 CLAUDE.md，再写代码。
+M1 后端骨架已完成（`backend/`）。下一步按 `doc/开发计划.md` 的 **M2** 实现目录/文章 CRUD、Markdown 渲染与公开读接口；不要同时铺开前台/后台。任何架构变更先更新设计文档与 CLAUDE.md，再写代码。
