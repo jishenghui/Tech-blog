@@ -75,7 +75,7 @@ go run . -hash-password 你的密码      # 生成 ADMIN_PASSWORD_HASH
 CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o blog-api .
 ```
 
-首次运行前从 `deploy/env/backend.env.example` 复制出 `backend/.env`，填写 `JWT_SECRET` 与 `ADMIN_PASSWORD_HASH`。首次启动会自动建表、创建管理员与固定一级目录。图片上传/ZIP 导入还需填写 `QINIU_ACCESS_KEY`、`QINIU_SECRET_KEY`、`QINIU_ASSET_BUCKET`、`QINIU_ASSET_DOMAIN`；未填写时上传接口返回 503，其余功能正常。
+首次运行前从 `deploy/env/backend.env.example` 复制出 `backend/.env`，填写 `JWT_SECRET` 与 `ADMIN_PASSWORD_HASH`。首次启动会自动建表、创建管理员与固定一级目录。图片上传/ZIP 导入还需填写 `QINIU_ACCESS_KEY`、`QINIU_SECRET_KEY`、`QINIU_ASSET_BUCKET`、`QINIU_ASSET_DOMAIN`；未填写时上传接口返回 503，其余功能正常。`QINIU_ASSET_DOMAIN` 为绑定到资源 bucket 的 CDN 域名：七牛云测试域名通常只支持 `http://`（30 天回收），自定义 CDN 域名使用 `https://`。
 
 前台与后台（待 M4/M5）：
 

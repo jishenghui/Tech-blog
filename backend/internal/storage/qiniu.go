@@ -27,11 +27,16 @@ type QiniuUploader struct {
 }
 
 func NewQiniuUploader(cfg *config.Config) *QiniuUploader {
+	domain := strings.TrimRight(strings.TrimSpace(cfg.QiniuAssetDomain), "/")
+	if domain != "" && !strings.HasPrefix(domain, "http://") && !strings.HasPrefix(domain, "https://") {
+		// 七牛云测试域名通常只支持 HTTP；自定义 CDN 域名请在配置中显式写 https://。
+		domain = "http://" + domain
+	}
 	return &QiniuUploader{
 		accessKey: cfg.QiniuAccessKey,
 		secretKey: cfg.QiniuSecretKey,
 		bucket:    cfg.QiniuAssetBucket,
-		domain:    strings.TrimRight(cfg.QiniuAssetDomain, "/"),
+		domain:    domain,
 	}
 }
 
