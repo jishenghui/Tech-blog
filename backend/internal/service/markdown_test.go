@@ -59,6 +59,9 @@ $$
 	if !strings.Contains(rendered.SearchText, "测试标题") || !strings.Contains(rendered.SearchText, "正文") {
 		t.Fatalf("搜索文本不正确: %q", rendered.SearchText)
 	}
+	if strings.Contains(rendered.SearchText, `\(`) || strings.Contains(rendered.Excerpt, `\(`) {
+		t.Fatalf("摘要/搜索文本不应包含 LaTeX: excerpt=%q search=%q", rendered.Excerpt, rendered.SearchText)
+	}
 	if rendered.Excerpt == "" {
 		t.Fatal("摘要不应为空")
 	}

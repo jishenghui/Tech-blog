@@ -3,6 +3,7 @@ package service
 import (
 	"bytes"
 	"html"
+	"regexp"
 	"strings"
 	"unicode"
 
@@ -39,7 +40,10 @@ type Rendered struct {
 }
 
 func NewMarkdownRenderer() *MarkdownRenderer {
-	style := styles.Get("github")
+	style := styles.Get("github-dark")
+	if style == nil {
+		style = styles.Get("github")
+	}
 	if style == nil {
 		style = styles.Fallback
 	}
@@ -186,11 +190,11 @@ func plainTextFromHTML(rendered string) string {
 			case "pre", "code", "script", "style":
 				// 代码/脚本不进入摘要与搜索文本。
 				return
-			case "img":
+			case "span":
+				// 数学公式的 TeX 原文不进入摘要与搜索文本。
 				for _, attr := range n.Attr {
-					if attr.Key == "alt" {
-						b.WriteString(attr.Val)
-						b.WriteByte(' ')
+					if attr.Key == "class" && strings.Contains(attr.Val, "math") {
+						return
 					}
 				}
 			}
@@ -200,8 +204,11 @@ func plainTextFromHTML(rendered string) string {
 		}
 	}
 	walk(doc)
-	return strings.Join(strings.Fields(b.String()), " ")
+	joined := strings.Join(strings.Fields(b.String()), " ")
+	return punctuationSpacePattern.ReplaceAllString(joined, "$1")
 }
+
+var punctuationSpacePattern = regexp.MustCompile(`\s+([。，！？：；,.;:!?])`)
 
 // countWords 把每个汉字计为一个词，把连续的拉丁字母/数字计为一个词。
 func countWords(text string) int {
