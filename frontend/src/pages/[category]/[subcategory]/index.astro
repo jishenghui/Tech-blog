@@ -1,0 +1,74 @@
+---
+import ArticleCard from '../../../components/ArticleCard.astro'
+import Pagination from '../../../components/Pagination.astro'
+import BaseLayout from '../../../layouts/BaseLayout.astro'
+import { apiGet } from '../../../lib/api'
+import type { DirectoryPage, NavNode } from '../../../lib/types'
+
+export async function getStaticPaths() {
+  const nav = await apiGet<NavNode[]>('/api/v1/nav')
+  const paths = []
+  for (const top of nav.filter((node) => node.kind === 'container')) {
+    for (const child of top.children ?? []) {
+      paths.push({
+        params: { category: top.slug, subcategory: child.slug },
+        props: { top, child },
+      })
+    }
+  }
+  return paths
+}
+
+interface Props {
+  top: NavNode
+  child: NavNode
+}
+
+const { top, child } = Astro.props
+const result = await apiGet<DirectoryPage>(
+  `/api/v1/directories/${child.slug}?page=1&page_size=20`,
+)
+---
+
+<BaseLayout
+  title={child.name}
+  description={`${child.name}目录下的文章。`}
+  active={top.slug}
+>
+  <section class="container page-shell">
+    <nav class="breadcrumbs" aria-label="面包屑">
+      <a href="/">首页</a><span>/</span>
+      <a href={`/${top.slug}/`}>{top.name}</a><span>/</span>
+      <span>{child.name}</span>
+    </nav>
+
+    <header class="page-head">
+      <p class="eyebrow">DIRECTORY / {top.slug} / {child.slug}</p>
+      <h1 class="page-title">{child.name}</h1>
+      <p class="page-subtitle">
+        {result.directory.description || `共 ${result.total} 篇已发布文章。`}
+      </p>
+    </header>
+
+    {
+      result.items.length > 0 ? (
+        <>
+          <div class="article-list">
+            {result.items.map((article) => <ArticleCard article={article} />)}
+          </div>
+          <Pagination
+            page={result.page}
+            total={result.total}
+            pageSize={result.page_size}
+            hrefFor={(page) =>
+              page === 1
+                ? `/${top.slug}/${child.slug}/`
+                : `/${top.slug}/${child.slug}/page/${page}/`}
+          />
+        </>
+      ) : (
+        <div class="empty-state">这个目录下还没有已发布文章。</div>
+      )
+    }
+  </section>
+</BaseLayout>

@@ -1,0 +1,63 @@
+---
+import ArticleCard from '../../../../components/ArticleCard.astro'
+import Pagination from '../../../../components/Pagination.astro'
+import BaseLayout from '../../../../layouts/BaseLayout.astro'
+import { apiGet, pageCount } from '../../../../lib/api'
+import type { ArticleSummary, Page as PageResult, TagView } from '../../../../lib/types'
+
+export async function getStaticPaths() {
+  const tags = await apiGet<TagView[]>('/api/v1/tags')
+  const paths = []
+  for (const tag of tags) {
+    const pages = pageCount(tag.article_count, 20)
+    for (let page = 2; page <= pages; page += 1) {
+      paths.push({
+        params: { slug: tag.slug, page: String(page) },
+        props: { tag, page },
+      })
+    }
+  }
+  return paths
+}
+
+interface Props {
+  tag: TagView
+  page: number
+}
+
+const { tag, page } = Astro.props
+const result = await apiGet<PageResult<ArticleSummary>>(
+  `/api/v1/tags/${tag.slug}/articles?page=${page}&page_size=20`,
+)
+---
+
+<BaseLayout
+  title={`${tag.name} · 第 ${page} 页 · 技术栈`}
+  description={`${tag.name} 相关文章，第 ${page} 页`}
+  active="tech"
+>
+  <section class="container page-shell">
+    <nav class="breadcrumbs" aria-label="面包屑">
+      <a href="/">首页</a><span>/</span>
+      <a href="/tags/">技术栈</a><span>/</span>
+      <a href={`/tags/${tag.slug}/`}>{tag.name}</a><span>/</span>
+      <span>第 {page} 页</span>
+    </nav>
+
+    <header class="page-head">
+      <p class="eyebrow">TAG / {tag.slug} / PAGE {page}</p>
+      <h1 class="page-title">{tag.name}</h1>
+      <p class="page-subtitle">共 {tag.article_count} 篇相关文章。</p>
+    </header>
+
+    <div class="article-list">
+      {result.items.map((article) => <ArticleCard article={article} showDirectory />)}
+    </div>
+    <Pagination
+      page={result.page}
+      total={result.total}
+      pageSize={result.page_size}
+      hrefFor={(target) => (target === 1 ? `/tags/${tag.slug}/` : `/tags/${tag.slug}/page/${target}/`)}
+    />
+  </section>
+</BaseLayout>

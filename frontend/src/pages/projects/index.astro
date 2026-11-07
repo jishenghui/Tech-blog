@@ -1,0 +1,46 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import { apiGet } from '../../lib/api'
+import type { ProjectSummary } from '../../lib/types'
+
+const projects = await apiGet<ProjectSummary[]>('/api/v1/projects')
+---
+
+<BaseLayout
+  title="项目"
+  description="项目列表：真实代码、架构与问题复盘。"
+  active="projects"
+>
+  <section class="container page-shell">
+    <header class="page-head">
+      <p class="eyebrow">PROJECTS / 项目</p>
+      <h1 class="page-title">项目与解决方案</h1>
+      <p class="page-subtitle">
+        每个项目记录真实的代码实践、架构选择与问题排查过程。部分项目包含调试流程和架构图。
+      </p>
+    </header>
+
+    {
+      projects.length === 0 ? (
+        <div class="empty-state">还没有已发布的项目。</div>
+      ) : (
+        <div class="featured-grid">
+          {projects.map((project) => (
+            <a class="featured-card" href={`/projects/${project.slug}/`}>
+              {project.cover_url && (
+                <img class="project-cover" src={project.cover_url} alt={project.title} loading="lazy" />
+              )}
+              <h3>{project.title}</h3>
+              {project.summary && <p>{project.summary}</p>}
+              {project.tech_stack.length > 0 && (
+                <div class="article-tags" style="margin-top:12px;">
+                  {project.tech_stack.map((item) => <span class="tag-chip">{item}</span>)}
+                </div>
+              )}
+            </a>
+          ))}
+        </div>
+      )
+    }
+  </section>
+</BaseLayout>

@@ -1,0 +1,61 @@
+---
+import ArticleCard from '../../../components/ArticleCard.astro'
+import Pagination from '../../../components/Pagination.astro'
+import BaseLayout from '../../../layouts/BaseLayout.astro'
+import { apiGet } from '../../../lib/api'
+import type { ArticleSummary, Page, TagView } from '../../../lib/types'
+
+export async function getStaticPaths() {
+  const tags = await apiGet<TagView[]>('/api/v1/tags')
+  return tags.map((tag) => ({ params: { slug: tag.slug }, props: { tag } }))
+}
+
+interface Props {
+  tag: TagView
+}
+
+const { tag } = Astro.props
+const result = await apiGet<Page<ArticleSummary>>(
+  `/api/v1/tags/${tag.slug}/articles?page=1&page_size=20`,
+)
+---
+
+<BaseLayout
+  title={`${tag.name} · 技术栈`}
+  description={tag.description || `${tag.name} 相关文章`}
+  active="tech"
+>
+  <section class="container page-shell">
+    <nav class="breadcrumbs" aria-label="面包屑">
+      <a href="/">首页</a><span>/</span>
+      <a href="/tags/">技术栈</a><span>/</span>
+      <span>{tag.name}</span>
+    </nav>
+
+    <header class="page-head">
+      <p class="eyebrow">TAG / {tag.slug}</p>
+      <h1 class="page-title">{tag.name}</h1>
+      <p class="page-subtitle">
+        {tag.description || `共 ${tag.article_count} 篇相关文章。`}
+      </p>
+    </header>
+
+    {
+      result.items.length > 0 ? (
+        <>
+          <div class="article-list">
+            {result.items.map((article) => <ArticleCard article={article} showDirectory />)}
+          </div>
+          <Pagination
+            page={result.page}
+            total={result.total}
+            pageSize={result.page_size}
+            hrefFor={(page) => (page === 1 ? `/tags/${tag.slug}/` : `/tags/${tag.slug}/page/${page}/`)}
+          />
+        </>
+      ) : (
+        <div class="empty-state">这个标签下还没有已发布文章。</div>
+      )
+    }
+  </section>
+</BaseLayout>

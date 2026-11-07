@@ -1,0 +1,87 @@
+---
+import ArchitectureDiagram from '../../components/ArchitectureDiagram.vue'
+import DebugGallery from '../../components/DebugGallery.vue'
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import { apiGet } from '../../lib/api'
+import { toArchEdges, toArchNodes, toDebugStepViews } from '../../lib/mappers'
+import type { ProjectDetail, ProjectSummary } from '../../lib/types'
+
+export async function getStaticPaths() {
+  const projects = await apiGet<ProjectSummary[]>('/api/v1/projects')
+  return projects.map((project) => ({ params: { slug: project.slug } }))
+}
+
+const { slug } = Astro.params
+const project = await apiGet<ProjectDetail>(`/api/v1/projects/${slug}`)
+const projects = await apiGet<ProjectSummary[]>('/api/v1/projects')
+
+const steps = await toDebugStepViews(project.debug_steps)
+const archNodes = toArchNodes(project.architecture?.nodes ?? [])
+const archEdges = toArchEdges(project.architecture?.edges ?? [])
+---
+
+<BaseLayout
+  title={project.title}
+  description={project.summary || project.title}
+  image={project.cover_url || undefined}
+  active="projects"
+>
+  <section class="container page-shell">
+    <nav class="breadcrumbs" aria-label="面包屑">
+      <a href="/">首页</a><span>/</span>
+      <a href="/projects/">项目</a><span>/</span>
+      <span>{project.title}</span>
+    </nav>
+
+    <div class="project-layout">
+      <aside class="project-sidebar" aria-label="项目列表">
+        {
+          projects.map((item) => (
+            <a href={`/projects/${item.slug}/`} class:list={{ active: item.slug === project.slug }}>
+              {item.title}
+            </a>
+          ))
+        }
+      </aside>
+
+      <article class="project-detail">
+        <header class="page-head">
+          <p class="eyebrow">PROJECT / {project.slug}</p>
+          <h1 class="page-title">{project.title}</h1>
+          {project.summary && <p class="page-subtitle">{project.summary}</p>}
+          {project.tech_stack.length > 0 && (
+            <div class="project-tech">
+              {project.tech_stack.map((item) => <span class="tag-chip">{item}</span>)}
+            </div>
+          )}
+          {(project.repo_url || project.demo_url) && (
+            <div class="project-links">
+              {project.repo_url && <a href={project.repo_url} target="_blank" rel="noreferrer">代码仓库 →</a>}
+              {project.demo_url && <a href={project.demo_url} target="_blank" rel="noreferrer">在线演示 →</a>}
+            </div>
+          )}
+        </header>
+
+        {project.content_html && <div class="prose article-prose" set:html={project.content_html} />}
+
+        {
+          steps.length > 0 && (
+            <section class="section-block">
+              <h2>调试与排查流程</h2>
+              <DebugGallery client:visible steps={steps} />
+            </section>
+          )
+        }
+
+        {
+          archNodes.length > 0 && (
+            <section class="section-block">
+              <h2>架构图</h2>
+              <ArchitectureDiagram client:visible nodes={archNodes} edges={archEdges} />
+            </section>
+          )
+        }
+      </article>
+    </div>
+  </section>
+</BaseLayout>

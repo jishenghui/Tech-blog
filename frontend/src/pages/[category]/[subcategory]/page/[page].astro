@@ -1,0 +1,72 @@
+---
+import ArticleCard from '../../../../components/ArticleCard.astro'
+import Pagination from '../../../../components/Pagination.astro'
+import BaseLayout from '../../../../layouts/BaseLayout.astro'
+import { apiGet, pageCount } from '../../../../lib/api'
+import type { DirectoryPage, NavNode } from '../../../../lib/types'
+
+export async function getStaticPaths() {
+  const nav = await apiGet<NavNode[]>('/api/v1/nav')
+  const paths = []
+  for (const top of nav.filter((node) => node.kind === 'container')) {
+    for (const child of top.children ?? []) {
+      const first = await apiGet<DirectoryPage>(
+        `/api/v1/directories/${child.slug}?page=1&page_size=1`,
+      )
+      const pages = pageCount(first.total, 20)
+      for (let page = 2; page <= pages; page += 1) {
+        paths.push({
+          params: { category: top.slug, subcategory: child.slug, page: String(page) },
+          props: { top, child, page },
+        })
+      }
+    }
+  }
+  return paths
+}
+
+interface Props {
+  top: NavNode
+  child: NavNode
+  page: number
+}
+
+const { top, child, page } = Astro.props
+const result = await apiGet<DirectoryPage>(
+  `/api/v1/directories/${child.slug}?page=${page}&page_size=20`,
+)
+---
+
+<BaseLayout
+  title={`${child.name} · 第 ${page} 页`}
+  description={`${child.name}目录下的文章，第 ${page} 页。`}
+  active={top.slug}
+>
+  <section class="container page-shell">
+    <nav class="breadcrumbs" aria-label="面包屑">
+      <a href="/">首页</a><span>/</span>
+      <a href={`/${top.slug}/`}>{top.name}</a><span>/</span>
+      <a href={`/${top.slug}/${child.slug}/`}>{child.name}</a><span>/</span>
+      <span>第 {page} 页</span>
+    </nav>
+
+    <header class="page-head">
+      <p class="eyebrow">DIRECTORY / {top.slug} / {child.slug} / PAGE {page}</p>
+      <h1 class="page-title">{child.name}</h1>
+      <p class="page-subtitle">共 {result.total} 篇已发布文章。</p>
+    </header>
+
+    <div class="article-list">
+      {result.items.map((article) => <ArticleCard article={article} />)}
+    </div>
+    <Pagination
+      page={result.page}
+      total={result.total}
+      pageSize={result.page_size}
+      hrefFor={(target) =>
+        target === 1
+          ? `/${top.slug}/${child.slug}/`
+          : `/${top.slug}/${child.slug}/page/${target}/`}
+    />
+  </section>
+</BaseLayout>

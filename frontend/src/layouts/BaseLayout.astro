@@ -1,0 +1,135 @@
+---
+import { apiGet } from '../lib/api'
+import type { NavNode } from '../lib/types'
+import '../styles/global.css'
+import '../styles/chroma.css'
+
+interface Props {
+  title?: string
+  description?: string
+  image?: string
+  noindex?: boolean
+  active?: string
+}
+
+const {
+  title = 'Tech Blog',
+  description = '个人技术博客与项目展示',
+  image,
+  noindex = false,
+  active = '',
+} = Astro.props
+
+const nav = await apiGet<NavNode[]>('/api/v1/nav')
+const siteName = 'Tech Blog'
+const pageTitle = title === siteName ? title : `${title} · ${siteName}`
+const site = Astro.site ?? new URL('https://www.example.com')
+const canonical = new URL(Astro.url.pathname, site).toString()
+const ogImage = image ? new URL(image, site).toString() : undefined
+
+function hrefFor(node: NavNode): string {
+  switch (node.page_key) {
+    case 'home':
+      return '/'
+    case 'projects':
+      return '/projects/'
+    case 'tech':
+      return '/tags/'
+    case 'todos':
+      return '/todos/'
+    default:
+      return `/${node.slug}/`
+  }
+}
+
+function childrenOf(node: NavNode): NavNode[] {
+  return node.kind === 'container' ? (node.children ?? []) : []
+}
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#07090d" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {noindex && <meta name="robots" content="noindex" />}
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    {ogImage && <meta property="og:image" content={ogImage} />}
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="alternate" type="application/rss+xml" title="Tech Blog RSS" href="/rss.xml" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container header-inner">
+        <a class="brand" href="/">jishenghui<span>.dev</span></a>
+        <ul class="header-nav desktop-nav" aria-label="主导航">
+          {
+            nav.map((node) => (
+              <li class:list={['nav-item', { 'has-children': childrenOf(node).length > 0 }]}>
+                <a
+                  href={hrefFor(node)}
+                  aria-current={active === node.page_key || active === node.slug ? 'page' : undefined}
+                >
+                  {node.name}
+                </a>
+                {childrenOf(node).length > 0 && (
+                  <ul class="nav-dropdown">
+                    {childrenOf(node).map((child) => (
+                      <li>
+                        <a href={`/${node.slug}/${child.slug}/`}>{child.name}</a>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </li>
+            ))
+          }
+          <li class="nav-item"><a href="/search/">搜索</a></li>
+        </ul>
+        <details class="mobile-menu">
+          <summary>菜单</summary>
+          <div class="mobile-menu-panel">
+            {
+              nav.map((node) => (
+                <>
+                  <a href={hrefFor(node)}>{node.name}</a>
+                  {childrenOf(node).length > 0 && (
+                    <div class="mobile-menu-group">
+                      {childrenOf(node).map((child) => (
+                        <a href={`/${node.slug}/${child.slug}/`}>{child.name}</a>
+                      ))}
+                    </div>
+                  )}
+                </>
+              ))
+            }
+            <a href="/search/">搜索</a>
+          </div>
+        </details>
+      </div>
+    </header>
+
+    <main>
+      <slot />
+    </main>
+
+    <footer class="footer">
+      <div class="container footer-inner">
+        <span>© {new Date().getFullYear()} jishenghui · Tech Blog</span>
+        <span>
+          <a href="/rss.xml">RSS</a>
+          ·
+          <a href="https://github.com/jishenghui/Tech-blog">GitHub</a>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

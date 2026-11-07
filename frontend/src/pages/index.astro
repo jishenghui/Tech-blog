@@ -1,30 +1,162 @@
 ---
-import '../styles/global.css'
+import AwardHover from '../components/AwardHover.vue'
+import BaseLayout from '../layouts/BaseLayout.astro'
+import { apiGet } from '../lib/api'
+import { formatDate } from '../lib/format'
+import { toAwardViews } from '../lib/mappers'
+import type { ProfileView, ProjectSummary } from '../lib/types'
+
+const profile = await apiGet<ProfileView>('/api/v1/profile')
+const projects = await apiGet<ProjectSummary[]>('/api/v1/projects')
+
+const awards = toAwardViews(profile.awards ?? [])
+const experiences = profile.experiences ?? []
+const featured = profile.featured_projects?.length
+  ? profile.featured_projects
+  : projects.slice(0, 6).map((project) => ({
+      name: project.title,
+      summary: project.summary,
+      url: `/projects/${project.slug}/`,
+      cover_url: project.cover_url,
+    }))
+const contacts = Object.entries(profile.contacts ?? {})
+const initial = (profile.headline || 'J').trim().slice(0, 1).toUpperCase()
 ---
 
-<!doctype html>
-<html lang="zh-CN">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#07090d" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <title>Tech Blog · Frontend POC</title>
-  </head>
-  <body>
-    <main class="container" style="padding: 14vh 0 10vh;">
-      <p class="eyebrow">TECH BLOG · FRONTEND PROTOTYPE</p>
-      <h1 style="max-width: 760px; margin: 14px 0 18px; font-size: clamp(2.6rem, 6vw, 4.8rem); letter-spacing: -0.055em; line-height: 1.04;">
-        Astro 前台<br /><em style="color: var(--accent); font-style: normal;">交互原型</em>
-      </h1>
-      <p class="hero-lede">
-        固定页的三种交互效果：调试流程、奖项悬浮、架构图。先验证体验与构建产物，
-        再接入后台结构化数据。
+<BaseLayout
+  title={profile.headline || '首页'}
+  description={profile.headline || '个人技术博客与项目展示'}
+  image={profile.avatar_url || undefined}
+  active="home"
+>
+  <section class="container home-hero">
+    <div>
+      <p class="eyebrow">HELLO / RESUME / PROJECTS</p>
+      <h1>{profile.headline || '你好，我是 jishenghui。'}</h1>
+      <p class="home-headline">
+        这里记录我的技术实践、项目复盘与学习路线。文章用 Markdown 编写，固定页用结构化 JSON
+        维护，前台以 Astro SSG 输出。
       </p>
-      <a class="button" href="/poc/">进入交互 POC <span>→</span></a>
-      <p class="section-note" style="margin-top: 48px;">
-        这是临时首页；M4 正式开发时会替换为真实首页。
-      </p>
-    </main>
-  </body>
-</html>
+      <div class="chips">
+        <span class="chip">Go / Gin</span>
+        <span class="chip">Astro / Vue</span>
+        <span class="chip">SQLite / Qiniu</span>
+      </div>
+      <div class="profile-contacts">
+        {
+          contacts.map(([key, value]) => {
+            const text = String(value)
+            return /^https?:\/\//.test(text) ? (
+              <a href={text} target="_blank" rel="noreferrer">{key}</a>
+            ) : (
+              <span>{key}: {text}</span>
+            )
+          })
+        }
+      </div>
+    </div>
+
+    <aside class="profile-card">
+      {
+        profile.avatar_url ? (
+          <img class="profile-avatar" src={profile.avatar_url} alt={profile.headline || '头像'} loading="lazy" />
+        ) : (
+          <div class="profile-avatar" style="display:grid;place-items:center;font-size:4rem;font-weight:750;color:var(--accent);">
+            {initial}
+          </div>
+        )
+      }
+      <div class="profile-card-body">
+        <p class="eyebrow">PROFILE</p>
+        <p style="margin:8px 0 0;font-size:13px;line-height:1.8;color:var(--muted);">
+          后端开发 / 技术博客作者。持续整理真实项目中的问题、方案与代码。
+        </p>
+      </div>
+    </aside>
+  </section>
+
+  {
+    profile.resume_html && (
+      <section class="container home-section">
+        <div class="section-head">
+          <span class="section-index">01 / RESUME</span>
+          <div>
+            <h2>关于我</h2>
+            <p>简历正文由后台 Markdown 编辑，构建时渲染为静态 HTML。</p>
+          </div>
+        </div>
+        <div class="prose" set:html={profile.resume_html} />
+      </section>
+    )
+  }
+
+  {
+    awards.length > 0 && (
+      <section class="container home-section">
+        <div class="section-head">
+          <span class="section-index">02 / AWARDS</span>
+          <div>
+            <h2>获奖与荣誉</h2>
+            <p>悬停或聚焦奖项，查看对应奖状。</p>
+          </div>
+        </div>
+        <AwardHover client:visible awards={awards} />
+      </section>
+    )
+  }
+
+  {
+    featured.length > 0 && (
+      <section class="container home-section">
+        <div class="section-head">
+          <span class="section-index">03 / PROJECTS</span>
+          <div>
+            <h2>项目</h2>
+            <p>一些真实项目与解决方案；完整列表见项目页。</p>
+          </div>
+        </div>
+        <div class="featured-grid">
+          {featured.map((project) => (
+            <a class="featured-card" href={project.url || '/projects/'}>
+              <h3>{project.name}</h3>
+              {project.summary && <p>{project.summary}</p>}
+            </a>
+          ))}
+        </div>
+        <a class="button" href="/projects/">查看全部项目 <span>→</span></a>
+      </section>
+    )
+  }
+
+  {
+    experiences.length > 0 && (
+      <section class="container home-section">
+        <div class="section-head">
+          <span class="section-index">04 / EXPERIENCE</span>
+          <div>
+            <h2>工作与实习</h2>
+            <p>按时间整理的项目经历与职责。</p>
+          </div>
+        </div>
+        <div class="timeline">
+          {experiences.map((experience) => (
+            <article class="timeline-item">
+              <span class="timeline-period">{experience.period}</span>
+              <h3>{experience.company} · {experience.role}</h3>
+              {experience.description && <p>{experience.description}</p>}
+            </article>
+          ))}
+        </div>
+      </section>
+    )
+  }
+
+  {
+    !profile.resume_html && awards.length === 0 && featured.length === 0 && experiences.length === 0 && (
+      <section class="container home-section">
+        <div class="empty-state">还没有首页资料。请先在后台维护 profile。</div>
+        <p class="section-note">更新时间：{formatDate(profile.updated_at)}</p>
+      </section>
+    )
+  }
+</BaseLayout>

@@ -1,0 +1,119 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro'
+---
+
+<BaseLayout
+  title="搜索"
+  description="搜索技术文章标题与正文。"
+  noindex
+>
+  <section class="container page-shell">
+    <header class="page-head">
+      <p class="eyebrow">SEARCH / 搜索</p>
+      <h1 class="page-title">搜索文章</h1>
+      <p class="page-subtitle">输入标题或正文关键词，结果来自公开搜索 API。</p>
+    </header>
+
+    <form class="search-form" id="search-form" role="search">
+      <input
+        class="search-input"
+        id="search-input"
+        name="q"
+        type="search"
+        placeholder="例如：SQLite、Astro、事务"
+        autocomplete="off"
+      />
+      <button class="search-button" type="submit">搜索</button>
+    </form>
+
+    <p class="search-status" id="search-status"></p>
+    <div class="article-list" id="search-results"></div>
+  </section>
+</BaseLayout>
+
+<script>
+  const apiBase = (import.meta.env.PUBLIC_API_BASE_URL || 'http://localhost:8080').replace(/\/+$/, '')
+  const form = document.querySelector<HTMLFormElement>('#search-form')
+  const input = document.querySelector<HTMLInputElement>('#search-input')
+  const status = document.querySelector<HTMLElement>('#search-status')
+  const results = document.querySelector<HTMLElement>('#search-results')
+
+  function formatDate(value: string | null | undefined): string {
+    if (!value) {
+      return ''
+    }
+    const date = new Date(value)
+    return Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString('zh-CN')
+  }
+
+  async function runSearch(query: string) {
+    if (!status || !results) {
+      return
+    }
+    status.textContent = '搜索中…'
+    results.replaceChildren()
+    try {
+      const response = await fetch(
+        `${apiBase}/api/v1/search?q=${encodeURIComponent(query)}&page=1&page_size=20`,
+      )
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`)
+      }
+      const body = await response.json()
+      if (body.code !== 0) {
+        throw new Error(body.message || '搜索失败')
+      }
+      const data = body.data
+      status.textContent = data.total > 0 ? `找到 ${data.total} 篇` : '没有找到相关文章。'
+      for (const item of data.items) {
+        const card = document.createElement('a')
+        card.className = 'article-card'
+        card.href = `/posts/${encodeURIComponent(item.slug)}/`
+
+        const title = document.createElement('h3')
+        title.textContent = item.title
+        card.append(title)
+
+        if (item.summary) {
+          const summary = document.createElement('p')
+          summary.textContent = item.summary
+          card.append(summary)
+        }
+
+        const meta = document.createElement('div')
+        meta.className = 'article-meta'
+        const date = document.createElement('span')
+        date.textContent = formatDate(item.published_at)
+        const reading = document.createElement('span')
+        reading.textContent = item.reading_time > 0 ? `${item.reading_time} 分钟` : '少于 1 分钟'
+        meta.append(date, reading)
+        card.append(meta)
+        results.append(card)
+      }
+    } catch (error) {
+      status.textContent = '搜索失败，请稍后重试。'
+      console.error(error)
+    }
+  }
+
+  form?.addEventListener('submit', (event) => {
+    event.preventDefault()
+    const query = input?.value.trim()
+    if (!query) {
+      if (status) {
+        status.textContent = '请输入关键词。'
+      }
+      return
+    }
+    history.replaceState(null, '', `/search/?q=${encodeURIComponent(query)}`)
+    runSearch(query)
+  })
+
+  const initial = new URLSearchParams(location.search).get('q')
+  if (initial) {
+    if (input) {
+      input.value = initial
+    }
+    runSearch(initial)
+  }
+</script>

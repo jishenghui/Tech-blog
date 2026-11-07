@@ -1,0 +1,39 @@
+---
+import { formatDate, readingLabel } from '../lib/format'
+import type { ArticleSummary } from '../lib/types'
+
+interface Props {
+  article: ArticleSummary
+  showDirectory?: boolean
+}
+
+const { article, showDirectory = false } = Astro.props
+---
+
+<article class="article-card">
+  <a class="article-card-link" href={`/posts/${article.slug}/`}>
+    <h3>{article.title}</h3>
+    {article.summary && <p>{article.summary}</p>}
+    <div class="article-meta">
+      {article.published_at && <span>{formatDate(article.published_at)}</span>}
+      <span>{readingLabel(article.reading_time)}</span>
+      {showDirectory && article.directory && <span>{article.directory.name}</span>}
+      {article.is_pinned && <span>置顶</span>}
+    </div>
+  </a>
+  {article.tags.length > 0 && (
+    <div class="article-tags">
+      {article.tags.map((tag) => (
+        <a class="tag-chip" href={`/tags/${tag.slug}/`}>{tag.name}</a>
+      ))}
+    </div>
+  )}
+</article>
+
+<style>
+.article-card-link {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+</style>

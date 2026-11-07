@@ -1,0 +1,43 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import { apiGet } from '../../lib/api'
+import { formatDate } from '../../lib/format'
+import type { TodoView } from '../../lib/types'
+
+const todos = await apiGet<TodoView[]>('/api/v1/todos')
+const pending = todos.filter((todo) => !todo.done).length
+---
+
+<BaseLayout
+  title="待办"
+  description="公开的待办清单，记录正在做与已完成的事项。"
+  active="todos"
+>
+  <section class="container page-shell">
+    <header class="page-head">
+      <p class="eyebrow">TODOS / 待办</p>
+      <h1 class="page-title">待办</h1>
+      <p class="page-subtitle">
+        共 {todos.length} 项，{pending} 项未完成。
+      </p>
+    </header>
+
+    {
+      todos.length > 0 ? (
+        <ul class="todo-list">
+          {todos.map((todo) => (
+            <li class:list={['todo-item', { done: todo.done }]}>
+              <span class="todo-check" aria-hidden="true">{todo.done ? '✓' : ''}</span>
+              <div>
+                <div class="todo-content">{todo.content}</div>
+                {todo.due_date && <div class="todo-due">截止：{formatDate(todo.due_date)}</div>}
+              </div>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <div class="empty-state">还没有待办事项。</div>
+      )
+    }
+  </section>
+</BaseLayout>

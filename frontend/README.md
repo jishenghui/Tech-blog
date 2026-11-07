@@ -1,6 +1,6 @@
 # frontend
 
-Astro 前台。当前处于 **M4 POC 阶段**：先验证固定页交互，正式页面、公开 API 接入与 404 兜底尚未实现。
+Astro 前台。M4 已完成：全站 SSG、构建时通过公开 API 取数、文章渲染、搜索、404 兜底、sitemap 与 RSS。
 
 ## 运行
 
@@ -9,66 +9,58 @@ Astro 前台。当前处于 **M4 POC 阶段**：先验证固定页交互，正�
 ```bash
 nvm use 22.23.4
 npm install
-npm run dev        # http://localhost:4321/poc/
-npm run build      # 产物在 dist/
+npm run dev        # http://localhost:4321/
+npm run build      # 需要后端 API 可用，产物在 dist/
 npm run preview    # 预览构建产物
 npm run check      # Astro/TypeScript 检查
 ```
 
-项目内 `.npmrc` 指向 `https://registry.npmmirror.com`；当前机器的全局清华 npm 镜像对 Astro 相关包返回 404，所以使用 npmmirror。若部署环境更适合官方源，可在 CI 中覆盖 registry。
+本地 `.env`：
 
-## POC 内容
-
-`/poc/` 验证三类固定页交互：
-
-1. **项目调试流程**：截图/视频封面列表；悬停切换右侧说明与代码；视频封面悬停播放；点击跳转技术文章（当前为 mock 链接）。
-2. **简历奖项**：悬停/聚焦奖项，右侧切换奖状大图与说明。
-3. **项目架构图**：内联 SVG 节点；悬停/聚焦显示组件说明；点击跳转技术栈/文章。
-
-实现要点：
-
-- Astro 7 构建时生成静态 HTML；`@astrojs/vue` 岛屿用 `client:visible` 按需水合。
-- 代码高亮用 Shiki 在构建时完成，浏览器不下载高亮库。
-- 视频 `preload="none"`，悬停时才设置 `src` 并播放；`muted` 保证浏览器允许播放。
-- 奖状/截图懒加载；架构图使用内联 SVG，不依赖图片热区。
-- 悬停交互同时支持键盘聚焦；移动端点击切换，视频提供静帧兜底。
-
-已用 Playwright + 本机 Edge 验证：调试步骤切换、视频播放（`readyState=4`）、奖项切换、架构节点切换均正常，无控制台错误。
-
-## 文件结构
-
-```text
-src/
-  components/
-    DebugGallery.vue          # 调试流程岛屿
-    AwardHover.vue            # 奖项岛屿
-    ArchitectureDiagram.vue   # 架构图岛屿
-  data/poc.ts                 # POC mock 数据
-  types/poc.ts                # 数据类型
-  pages/
-    index.astro               # 临时入口
-    poc.astro                 # 交互 POC
-  styles/global.css
-public/
-  favicon.svg
-  poc/                        # 截图、奖状、占位视频
+```dotenv
+PUBLIC_API_BASE_URL=http://localhost:8080
+SITE_URL=http://localhost:4321
 ```
 
-`public/poc/debug-demo.mp4` 是 1.1MB 的 CC0 示例视频，仅用于演示悬停播放；正式实现会替换为项目自己的排查录屏，并放到七牛云。
+模板见 `deploy/env/frontend.env.example`。`npm run build` 会在构建时请求 `PUBLIC_API_BASE_URL`，因此构建前必须先启动 `backend/`。
 
-## 与后台数据的关系
+项目内 `.npmrc` 指向 `https://registry.npmmirror.com`；当前机器的全局清华 npm 镜像对 Astro 相关包返回 404，所以使用 npmmirror。若部署环境更适合官方源，可在 CI 中覆盖 registry。
 
-POC 数据目前来自 `src/data/poc.ts`。正式设计（见 `doc/数据库与API设计.md` 1.5.1）：
+## 页面
 
-- `projects.debug_steps`：调试流程步骤 JSON；
-- `projects.architecture`：架构图节点/边 JSON；
-- `profile.awards`：奖状 JSON（已有字段）。
+| 页面 | 路径 |
+| --- | --- |
+| 首页 / 简历 | `/` |
+| 项目列表 | `/projects/` |
+| 项目详情 | `/projects/{slug}/` |
+| 技术栈 | `/tags/` |
+| 标签文章 | `/tags/{slug}/`、`/tags/{slug}/page/{n}/` |
+| 一级目录 | `/{category}/` |
+| 二级目录 | `/{category}/{subcategory}/`、`/page/{n}/` |
+| 文章详情 | `/posts/{slug}/` |
+| 待办 | `/todos/` |
+| 搜索 | `/search/?q=`（客户端调公开搜索 API） |
+| 404 | `/404.html`（按文章 slug 调公开 API 兜底） |
+| sitemap / RSS | `/sitemap.xml`、`/rss.xml` |
+| POC | `/poc/`（保留的交互原型，不进入 sitemap） |
 
-这些字段由 M5 后台可视化编辑，Astro 构建时通过公开 API 读取。视频文件建议放七牛云，数据库只存 URL。
+## 实现要点
+
+- 全站 SSG：`getStaticPaths` 在构建时拉取目录、标签、项目、文章和固定页 JSON；产物为纯静态 HTML。
+- 文章页：
+  - 后端 `content_html` 直接输出；Chroma CSS 在 `src/styles/chroma.css`。
+  - 数学公式使用 KaTeX auto-render，Mermaid 使用动态 `import('mermaid')`；只有页面包含对应标记时才加载。
+  - `article-prose` 隐藏正文重复的首个 h1（页面标题已单独展示）。
+- 固定页：
+  - 项目页集成 `DebugGallery.vue`（构建时 Shiki 高亮代码、视频悬停播放）与 `ArchitectureDiagram.vue`（内联 SVG）。
+  - 首页集成 `AwardHover.vue`（奖项悬浮奖状）。
+- 搜索：静态页面 + 小脚本调用 `/api/v1/search`；这是少数客户端取数场景之一。
+- 404：静态 404 页读取 URL 中的文章 slug，调 `/api/v1/articles/{slug}` 临时渲染；`noindex`，不承担 SEO。
+- sitemap 与 RSS 使用构建时数据生成；sitemap 排除 `/poc/`、搜索页与 404。
+- 交互岛屿使用 `client:visible`，共享 Vue runtime；普通文章/列表页不加载 Vue。
 
 ## 性能备注
 
-POC 构建产物中，页面 HTML 约 32KB；Vue runtime 约 68KB（未压缩），三个岛屿组件各约 4KB，共享同一份 runtime。正式实现时可评估：
-
-- 奖项、架构图等简单交互改用原生 TS/CSS，进一步去掉 Vue runtime；
-- 调试流程保留 Vue 岛屿，代码面板改为 Astro 静态渲染 + 轻量切换脚本，避免代码 HTML 在 island props 中重复。
+- 页面主体为静态 HTML；文章页只有搜索/404 之外的必要脚本，KaTeX/Mermaid 按需加载。
+- Mermaid 和 KaTeX 的动态 chunk 较大，Vite 会给出 >500KB 提示；这是按需加载的预期结果，不影响首屏。
+- `public/poc/debug-demo.mp4` 是 1.1MB 的 CC0 示例视频，仅用于 `/poc/` 演示；正式站点不需要时可删除。

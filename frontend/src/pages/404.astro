@@ -1,0 +1,56 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+---
+
+<BaseLayout
+  title="页面不存在"
+  description="页面不存在或尚未发布。"
+  noindex
+>
+  <section class="container error-page">
+    <div>
+      <p class="eyebrow">404 / NOT FOUND</p>
+      <h1>404</h1>
+      <p id="error-message">文章不存在、尚未发布，或页面已移动。</p>
+      <a class="button" href="/">返回首页</a>
+      <div id="fallback" class="fallback-article" hidden></div>
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  const apiBase = (import.meta.env.PUBLIC_API_BASE_URL || 'http://localhost:8080').replace(/\/+$/, '')
+  const fallback = document.querySelector<HTMLElement>('#fallback')
+  const match = location.pathname.match(/^\/posts\/([^/]+)\/?$/)
+
+  if (match && fallback) {
+    const slug = decodeURIComponent(match[1])
+    fetch(`${apiBase}/api/v1/articles/${encodeURIComponent(slug)}`)
+      .then((response) => (response.ok ? response.json() : Promise.reject(new Error(`HTTP ${response.status}`))))
+      .then((body) => {
+        if (body.code !== 0 || !body.data) {
+          return
+        }
+        const article = body.data
+        const title = document.createElement('h1')
+        title.className = 'page-title'
+        title.textContent = article.title
+        const note = document.createElement('p')
+        note.className = 'search-status'
+        note.textContent = '这是静态站重建完成前的临时页面；正式页面将在下次构建后生成。'
+        const content = document.createElement('div')
+        content.className = 'prose'
+        content.innerHTML = article.content_html
+        fallback.append(title, note, content)
+        fallback.hidden = false
+        const message = document.querySelector<HTMLElement>('#error-message')
+        if (message) {
+          message.hidden = true
+        }
+        document.title = `${article.title} · Tech Blog`
+      })
+      .catch(() => {
+        // 保持默认 404 文案。
+      })
+  }
+</script>

@@ -1,0 +1,39 @@
+---
+import { pageCount } from '../lib/api'
+
+interface Props {
+  page: number
+  total: number
+  pageSize?: number
+  hrefFor: (page: number) => string
+}
+
+const { page, total, pageSize = 20, hrefFor } = Astro.props
+const pages = pageCount(total, pageSize)
+const visiblePages = Array.from({ length: pages }, (_, index) => index + 1).filter(
+  (value) => value === 1 || value === pages || Math.abs(value - page) <= 2,
+)
+---
+
+{
+  pages > 1 && (
+    <nav class="pagination" aria-label="分页">
+      {page > 1 && <a href={hrefFor(page - 1)} aria-label="上一页">←</a>}
+      {visiblePages.map((value, index) => {
+        const previous = visiblePages[index - 1]
+        const gap = previous && value - previous > 1
+        return (
+          <>
+            {gap && <span>…</span>}
+            {value === page ? (
+              <span class="current" aria-current="page">{value}</span>
+            ) : (
+              <a href={hrefFor(value)}>{value}</a>
+            )}
+          </>
+        )
+      })}
+      {page < pages && <a href={hrefFor(page + 1)} aria-label="下一页">→</a>}
+    </nav>
+  )
+}

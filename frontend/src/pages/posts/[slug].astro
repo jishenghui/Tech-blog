@@ -1,0 +1,102 @@
+---
+import 'katex/dist/katex.min.css'
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import { apiGet, fetchAllArticles } from '../../lib/api'
+import { formatDate, readingLabel } from '../../lib/format'
+import type { ArticleDetail, NavNode } from '../../lib/types'
+
+export async function getStaticPaths() {
+  const articles = await fetchAllArticles()
+  return articles.map((article) => ({ params: { slug: article.slug } }))
+}
+
+const { slug } = Astro.params
+const article = await apiGet<ArticleDetail>(`/api/v1/articles/${slug}`)
+const nav = await apiGet<NavNode[]>('/api/v1/nav')
+
+const directorySlug = article.directory?.slug
+const parent = directorySlug
+  ? nav.find((node) => node.children?.some((child) => child.slug === directorySlug))
+  : undefined
+const hasMath = article.content_html.includes('class="math')
+const hasMermaid = article.content_html.includes('class="mermaid"')
+---
+
+<BaseLayout
+  title={article.title}
+  description={article.summary || article.title}
+  image={article.cover_url || undefined}
+  active={parent?.slug}
+>
+  <article class="container page-shell">
+    <nav class="breadcrumbs" aria-label="面包屑">
+      <a href="/">首页</a><span>/</span>
+      {parent && <a href={`/${parent.slug}/`}>{parent.name}</a>}
+      {parent && <span>/</span>}
+      {parent && article.directory && (
+        <a href={`/${parent.slug}/${article.directory.slug}/`}>{article.directory.name}</a>
+      )}
+      {parent && article.directory && <span>/</span>}
+      <span>{article.title}</span>
+    </nav>
+
+    <header class="page-head">
+      <p class="eyebrow">POST / {article.slug}</p>
+      <h1 class="page-title">{article.title}</h1>
+      {article.summary && <p class="page-subtitle">{article.summary}</p>}
+      <div class="article-meta">
+        {article.published_at && <span>{formatDate(article.published_at)}</span>}
+        <span>{readingLabel(article.reading_time)}</span>
+        <span>{article.word_count} 字</span>
+      </div>
+      {article.tags.length > 0 && (
+        <div class="article-tags">
+          {article.tags.map((tag) => (
+            <a class="tag-chip" href={`/tags/${tag.slug}/`}>{tag.name}</a>
+          ))}
+        </div>
+      )}
+    </header>
+
+    {article.cover_url && (
+      <img
+        src={article.cover_url}
+        alt={article.title}
+        style="width:100%;max-height:460px;object-fit:cover;border:1px solid var(--border);border-radius:14px;margin-bottom:32px;"
+        loading="eager"
+      />
+    )}
+
+    <div class="prose article-prose" set:html={article.content_html} />
+  </article>
+</BaseLayout>
+
+{
+  (hasMath || hasMermaid) && (
+    <script>
+      ;(async () => {
+        try {
+          if (document.querySelector('.math')) {
+            const { default: renderMathInElement } = await import('katex/contrib/auto-render')
+            const prose = document.querySelector<HTMLElement>('.prose')
+            if (prose) {
+              renderMathInElement(prose, {
+                delimiters: [
+                  { left: '\\(', right: '\\)', display: false },
+                  { left: '\\[', right: '\\]', display: true },
+                ],
+              })
+            }
+          }
+          if (document.querySelector('.mermaid')) {
+            const { default: mermaid } = await import('mermaid')
+            mermaid.initialize({ startOnLoad: false, theme: 'dark', securityLevel: 'strict' })
+            await mermaid.run({ querySelector: '.mermaid' })
+          }
+        } catch (error) {
+          console.error('文章增强渲染失败', error)
+        }
+      })()
+    </script>
+  )
+}

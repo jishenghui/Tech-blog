@@ -1,0 +1,82 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import { apiGet } from '../../lib/api'
+import type { TagView } from '../../lib/types'
+
+const tags = await apiGet<TagView[]>('/api/v1/tags')
+---
+
+<BaseLayout
+  title="技术栈"
+  description="按标签聚合的技术文章，展示全部 tag 与文章数量。"
+  active="tech"
+>
+  <section class="container page-shell">
+    <header class="page-head">
+      <p class="eyebrow">TECH STACK / 技术栈</p>
+      <h1 class="page-title">技术栈</h1>
+      <p class="page-subtitle">
+        所有文章按标签聚合。输入关键词筛选标签，点击进入对应文章列表。
+      </p>
+    </header>
+
+    {
+      tags.length > 0 ? (
+        <>
+          <div class="tag-toolbar">
+            <input
+              id="tag-filter"
+              class="tag-filter"
+              type="search"
+              placeholder="筛选标签，例如 Go / Astro / SQLite"
+              autocomplete="off"
+            />
+            <span class="section-note" id="tag-count">{tags.length} 个标签</span>
+          </div>
+          <div class="tag-grid" id="tag-grid">
+            {tags.map((tag) => (
+              <a
+                class="tag-card"
+                href={`/tags/${tag.slug}/`}
+                data-tag-card
+                data-name={tag.name}
+              >
+                <strong>{tag.name}</strong>
+                <span>{tag.article_count} 篇</span>
+              </a>
+            ))}
+          </div>
+          <div class="empty-state" id="tag-empty" hidden>没有匹配的标签。</div>
+        </>
+      ) : (
+        <div class="empty-state">还没有标签。</div>
+      )
+    }
+  </section>
+</BaseLayout>
+
+<script>
+  const input = document.querySelector<HTMLInputElement>('#tag-filter')
+  const cards = Array.from(document.querySelectorAll<HTMLElement>('[data-tag-card]'))
+  const empty = document.querySelector<HTMLElement>('#tag-empty')
+  const count = document.querySelector<HTMLElement>('#tag-count')
+
+  input?.addEventListener('input', () => {
+    const keyword = input.value.trim().toLowerCase()
+    let visible = 0
+    for (const card of cards) {
+      const name = (card.dataset.name || '').toLowerCase()
+      const matched = keyword === '' || name.includes(keyword)
+      card.hidden = !matched
+      if (matched) {
+        visible += 1
+      }
+    }
+    if (empty) {
+      empty.hidden = visible !== 0
+    }
+    if (count) {
+      count.textContent = `${visible} / ${cards.length} 个标签`
+    }
+  })
+</script>
