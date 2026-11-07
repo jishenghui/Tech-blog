@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b0f14"/>
+      <stop offset="1" stop-color="#161b22"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.85" cy="0.1" r="0.8">
+      <stop offset="0" stop-color="#ff7b72" stop-opacity=".25"/>
+      <stop offset="1" stop-color="#ff7b72" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">
+      <path d="M 32 0 L 0 0 0 32" fill="none" stroke="#30363d" stroke-width="0.6" opacity=".5"/>
+    </pattern>
+  </defs>
+  <rect width="640" height="360" fill="url(#bg)"/>
+  <rect width="640" height="360" fill="url(#grid)"/>
+  <rect width="640" height="360" fill="url(#glow)"/>
+  <g transform="translate(48 48)">
+    <rect width="544" height="264" rx="14" fill="#0a0e13" stroke="#30363d"/>
+    <path d="M0 14a14 14 0 0 1 14-14h516a14 14 0 0 1 14 14v20H0z" fill="#161b22"/>
+    <circle cx="20" cy="17" r="5" fill="#ff7b72"/>
+    <circle cx="38" cy="17" r="5" fill="#d29922"/>
+    <circle cx="56" cy="17" r="5" fill="#3fb950"/>
+    <text x="82" y="23" fill="#8b949e" font-size="11" font-family="ui-monospace, monospace">POST /api/v1/admin/articles/42/publish</text>
+    <text x="24" y="72" fill="#8b949e" font-size="13" font-family="ui-monospace, monospace">$ curl -s -X POST http://127.0.0.1:8080/api/v1/admin/articles/42/publish</text>
+    <text x="24" y="104" fill="#ff7b72" font-size="13" font-family="ui-monospace, monospace">HTTP/1.1 500 Internal Server Error</text>
+    <text x="24" y="140" fill="#e6edf3" font-size="13" font-family="ui-monospace, monospace">{</text>
+    <text x="44" y="164" fill="#79c0ff" font-size="13" font-family="ui-monospace, monospace">"code"</text>
+    <text x="96" y="164" fill="#e6edf3" font-size="13" font-family="ui-monospace, monospace">: 50001,</text>
+    <text x="44" y="188" fill="#79c0ff" font-size="13" font-family="ui-monospace, monospace">"message"</text>
+    <text x="124" y="188" fill="#e6edf3" font-size="13" font-family="ui-monospace, monospace">: "发布文章失败"</text>
+    <text x="24" y="212" fill="#e6edf3" font-size="13" font-family="ui-monospace, monospace">}</text>
+    <rect x="22" y="226" width="248" height="24" rx="6" fill="#ff7b72" opacity=".12" stroke="#ff7b72" stroke-opacity=".45"/>
+    <text x="34" y="243" fill="#ff7b72" font-size="11" font-family="ui-monospace, monospace">database is locked · SQLITE_BUSY</text>
+  </g>
+  <text x="48" y="338" fill="#8b949e" font-size="11" font-family="ui-monospace, monospace">01 / REPRODUCE</text>
+</svg>

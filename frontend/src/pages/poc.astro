@@ -1,0 +1,132 @@
+---
+import { codeToHtml } from 'shiki'
+import ArchitectureDiagram from '../components/ArchitectureDiagram.vue'
+import AwardHover from '../components/AwardHover.vue'
+import DebugGallery from '../components/DebugGallery.vue'
+import { architectureEdges, architectureNodes, awards, debugSteps } from '../data/poc'
+import '../styles/global.css'
+
+const steps = await Promise.all(
+  debugSteps.map(async (step) => ({
+    ...step,
+    codeHtml: await codeToHtml(step.code, { lang: step.codeLang, theme: 'github-dark' }),
+  })),
+)
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="固定页交互 POC：调试流程、奖项悬浮、架构图。Astro 静态输出 + Vue 岛屿交互。"
+    />
+    <meta name="theme-color" content="#07090d" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>固定页交互 POC · Tech Blog</title>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container header-inner">
+        <a class="brand" href="/">jishenghui<span>.dev</span></a>
+        <span class="poc-badge">POC</span>
+        <nav class="header-nav" aria-label="页面导航">
+          <a href="#debug">调试流程</a>
+          <a href="#awards">奖项</a>
+          <a href="#architecture">架构图</a>
+          <a href="/">返回首页</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero container">
+        <p class="eyebrow">INTERACTIVE PROTOTYPE / FIXED PAGES</p>
+        <h1>固定页也可以<br /><em>有交互。</em></h1>
+        <p class="hero-lede">
+          这是一个 Astro + Vue islands 的 POC：项目调试流程、简历奖项悬浮、项目架构图。
+          页面主体在构建时生成静态 HTML，只有需要交互的岛屿加载 JS；数据当前为本地 mock，
+          后续由后台结构化 JSON 驱动。
+        </p>
+        <div class="chips">
+          <span class="chip">Astro SSG</span>
+          <span class="chip">Vue islands</span>
+          <span class="chip">Shiki build-time</span>
+          <span class="chip">Video hover</span>
+          <span class="chip">Inline SVG</span>
+        </div>
+        <div class="hero-note">
+          <strong>性能取向：</strong>
+          <span>代码高亮在构建时完成；视频悬停才加载；悬浮面板、架构图只在进入视口后水合。</span>
+        </div>
+      </section>
+
+      <section id="debug" class="section">
+        <div class="container">
+          <div class="section-head">
+            <span class="section-index">01 / DEBUG</span>
+            <div>
+              <h2>项目调试流程</h2>
+              <p>
+                左侧是排查步骤的截图或视频封面；悬停切换右侧说明与代码，视频封面悬停即播放；
+                点击进入相关技术文章。代码由 Shiki 在构建时高亮，不依赖浏览器高亮库。
+              </p>
+            </div>
+          </div>
+          <DebugGallery client:visible steps={steps} />
+          <p class="section-note">
+            交互组件：<code>DebugGallery.vue</code> · 仅这一段加载 Vue 岛屿；
+            代码 HTML 在构建时注入。
+          </p>
+        </div>
+      </section>
+
+      <section id="awards" class="section">
+        <div class="container">
+          <div class="section-head">
+            <span class="section-index">02 / AWARDS</span>
+            <div>
+              <h2>简历奖项</h2>
+              <p>
+                奖项文本悬停或键盘聚焦时，右侧显示奖状大图与说明；移动端点击奖项即可切换。
+                数据直接对应后台 <code>profile.awards</code> 的 JSON 结构。
+              </p>
+            </div>
+          </div>
+          <AwardHover client:visible awards={awards} />
+          <p class="section-note">
+            交互组件：<code>AwardHover.vue</code> · 图片懒加载，避免首屏加载所有奖状。
+          </p>
+        </div>
+      </section>
+
+      <section id="architecture" class="section">
+        <div class="container">
+          <div class="section-head">
+            <span class="section-index">03 / ARCH</span>
+            <div>
+              <h2>项目架构图</h2>
+              <p>
+                内联 SVG 节点支持悬停、键盘聚焦与点击；右侧显示该组件在本项目中的作用，
+                点击节点跳转到技术栈页或相关文章。节点坐标来自结构化 JSON，后续可在后台编辑。
+              </p>
+            </div>
+          </div>
+          <ArchitectureDiagram client:visible nodes={architectureNodes} edges={architectureEdges} />
+          <p class="section-note">
+            交互组件：<code>ArchitectureDiagram.vue</code> · SVG 可缩放、可访问，不依赖图片热区。
+          </p>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="container footer-inner">
+        <span>POC · 本地 mock 数据 · 构建时静态输出</span>
+        <span>下一步：接入后台 JSON 字段与可视化编辑器</span>
+      </div>
+    </footer>
+  </body>
+</html>

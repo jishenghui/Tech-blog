@@ -1,0 +1,22 @@
+{
+  "name": "blog-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "check": "astro check"
+  },
+  "dependencies": {
+    "@astrojs/vue": "^7.1.2",
+    "astro": "^7.4.7",
+    "shiki": "^4.6.0",
+    "vue": "^3.5.45"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.12",
+    "typescript": "^5.9.0"
+  }
+}

@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 400">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b0f14"/>
+      <stop offset="1" stop-color="#171122"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.8" cy="0.15" r="0.8">
+      <stop offset="0" stop-color="#d2a8ff" stop-opacity=".24"/>
+      <stop offset="1" stop-color="#d2a8ff" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="violet" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#d2a8ff"/>
+      <stop offset="1" stop-color="#8957e5"/>
+    </linearGradient>
+    <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">
+      <path d="M 32 0 L 0 0 0 32" fill="none" stroke="#30363d" stroke-width="0.6" opacity=".35"/>
+    </pattern>
+  </defs>
+  <rect width="640" height="400" fill="url(#bg)"/>
+  <rect width="640" height="400" fill="url(#grid)"/>
+  <rect width="640" height="400" fill="url(#glow)"/>
+  <g transform="translate(56 44)">
+    <rect width="528" height="312" rx="16" fill="#0d1117" stroke="url(#violet)" stroke-width="1.5"/>
+    <rect x="14" y="14" width="500" height="284" rx="10" fill="none" stroke="#d2a8ff" stroke-opacity=".25"/>
+    <text x="264" y="66" text-anchor="middle" fill="#d2a8ff" font-size="12" letter-spacing="4" font-family="ui-monospace, monospace">OUTSTANDING GRADUATE</text>
+    <text x="264" y="134" text-anchor="middle" fill="#f0e6ff" font-size="38" font-weight="700" font-family="'Noto Sans SC', 'Microsoft YaHei', sans-serif">优秀毕业生</text>
+    <text x="264" y="168" text-anchor="middle" fill="#8b949e" font-size="13" font-family="'Noto Sans SC', 'Microsoft YaHei', sans-serif">校级 · 毕业设计与企业实践 · 2025</text>
+    <path d="M172 196h184" stroke="#d2a8ff" stroke-opacity=".45"/>
+    <text x="264" y="226" text-anchor="middle" fill="#c9d1d9" font-size="13" font-family="'Noto Sans SC', 'Microsoft YaHei', sans-serif">综合表现优秀</text>
+    <g transform="translate(440 246)">
+      <circle r="34" fill="none" stroke="#d2a8ff" stroke-width="2"/>
+      <circle r="27" fill="none" stroke="#d2a8ff" stroke-opacity=".5"/>
+      <text x="0" y="6" text-anchor="middle" fill="#d2a8ff" font-size="20" font-family="'Noto Sans SC', 'Microsoft YaHei', sans-serif">优</text>
+      <path d="M -14 30 L -20 52 L 0 44 L 20 52 L 14 30" fill="#8957e5" stroke="#d2a8ff" stroke-width="1"/>
+    </g>
+  </g>
+  <text x="56" y="382" fill="#8b949e" font-size="11" font-family="ui-monospace, monospace">AWARD / 03</text>
+</svg>

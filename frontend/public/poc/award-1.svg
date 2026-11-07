@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 400">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b0f14"/>
+      <stop offset="1" stop-color="#1b1710"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.8" cy="0.15" r="0.8">
+      <stop offset="0" stop-color="#e3b341" stop-opacity=".26"/>
+      <stop offset="1" stop-color="#e3b341" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f2cc60"/>
+      <stop offset="1" stop-color="#b08823"/>
+    </linearGradient>
+    <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">
+      <path d="M 32 0 L 0 0 0 32" fill="none" stroke="#30363d" stroke-width="0.6" opacity=".35"/>
+    </pattern>
+  </defs>
+  <rect width="640" height="400" fill="url(#bg)"/>
+  <rect width="640" height="400" fill="url(#grid)"/>
+  <rect width="640" height="400" fill="url(#glow)"/>
+  <g transform="translate(56 44)">
+    <rect width="528" height="312" rx="16" fill="#0d1117" stroke="url(#gold)" stroke-width="1.5"/>
+    <rect x="14" y="14" width="500" height="284" rx="10" fill="none" stroke="#e3b341" stroke-opacity=".28"/>
+    <path d="M14 44V28a14 14 0 0 1 14-14h28" fill="none" stroke="#e3b341" stroke-width="2"/>
+    <path d="M500 28a14 14 0 0 1 14 14v16" fill="none" stroke="#e3b341" stroke-width="2"/>
+    <path d="M14 268v16a14 14 0 0 0 14 14h28" fill="none" stroke="#e3b341" stroke-width="2"/>
+    <path d="M500 298h-28" fill="none" stroke="#e3b341" stroke-width="2"/>
+    <text x="264" y="66" text-anchor="middle" fill="#e3b341" font-size="12" letter-spacing="4" font-family="ui-monospace, monospace">CERTIFICATE OF HONOR</text>
+    <text x="264" y="134" text-anchor="middle" fill="#f5e6b3" font-size="40" font-weight="700" font-family="'Noto Sans SC', 'Microsoft YaHei', sans-serif">国家奖学金</text>
+    <text x="264" y="168" text-anchor="middle" fill="#8b949e" font-size="13" font-family="'Noto Sans SC', 'Microsoft YaHei', sans-serif">NATIONAL SCHOLARSHIP · 2024</text>
+    <path d="M172 196h184" stroke="#e3b341" stroke-opacity=".45"/>
+    <text x="264" y="226" text-anchor="middle" fill="#c9d1d9" font-size="13" font-family="'Noto Sans SC', 'Microsoft YaHei', sans-serif">综合成绩与项目实践表现优秀</text>
+    <g transform="translate(440 246)">
+      <circle r="34" fill="none" stroke="#e3b341" stroke-width="2"/>
+      <circle r="27" fill="none" stroke="#e3b341" stroke-opacity=".5"/>
+      <text x="0" y="6" text-anchor="middle" fill="#f2cc60" font-size="20" font-family="'Noto Sans SC', 'Microsoft YaHei', sans-serif">奖</text>
+      <path d="M -14 30 L -20 52 L 0 44 L 20 52 L 14 30" fill="#b08823" stroke="#f2cc60" stroke-width="1"/>
+    </g>
+  </g>
+  <text x="56" y="382" fill="#8b949e" font-size="11" font-family="ui-monospace, monospace">AWARD / 01</text>
+</svg>
