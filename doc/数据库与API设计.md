@@ -130,6 +130,8 @@ CREATE TABLE projects (
   content_md   TEXT NOT NULL DEFAULT '',
   content_html TEXT NOT NULL DEFAULT '',
   tech_stack   TEXT NOT NULL DEFAULT '[]', -- JSON 数组
+  debug_steps  TEXT NOT NULL DEFAULT '[]', -- JSON：调试流程步骤
+  architecture TEXT NOT NULL DEFAULT '{}', -- JSON：架构图节点/边
   repo_url     TEXT,
   demo_url     TEXT,
   cover_url    TEXT,
@@ -143,6 +145,70 @@ CREATE TABLE projects (
 );
 CREATE UNIQUE INDEX uk_projects_slug ON projects(slug) WHERE deleted_at IS NULL;
 ```
+
+#### 1.5.1 固定页自定义 JSON（M4 POC 后确定的设计）
+
+`projects.debug_steps` 为 JSON 数组，元素：
+
+```json
+{
+  "id": "reproduce",
+  "title": "复现 500",
+  "description": "先用最小请求复现发布接口的 500。",
+  "image_url": "https://cdn.example.com/poc/debug-1.svg",
+  "video_url": "https://cdn.example.com/poc/debug-1.mp4",
+  "video_poster": "https://cdn.example.com/poc/debug-1-poster.svg",
+  "code": "func (s *ArticleService) Publish(id uint) error { ... }",
+  "code_lang": "go",
+  "article_slug": "sqlite-wal-lock",
+  "tag_slug": "sqlite"
+}
+```
+
+- `image_url`、`video_url`、`video_poster` 均可为空；有 `video_url` 时前台悬停播放。
+- `article_slug` 为空时只展示 `tag_slug` 对应技术栈页。
+- 每个项目最多 20 步，单段 `code` 不超过 20KB。
+
+`projects.architecture` 为 JSON 对象：
+
+```json
+{
+  "nodes": [
+    {
+      "id": "api",
+      "label": "Go API",
+      "kind": "backend",
+      "x": 340,
+      "y": 210,
+      "description": "Gin + GORM 单二进制服务，常驻 2G ECS。",
+      "tag_slug": "go",
+      "search_query": null
+    }
+  ],
+  "edges": [{ "from": "admin", "to": "api" }]
+}
+```
+
+- `kind` 取 `frontend` / `backend` / `data` / `infra` / `admin`，用于配色。
+- `x` / `y` 为 SVG viewBox 坐标，后台编辑器可拖动调整。
+- 最多 50 个节点、100 条边；`tag_slug` 与 `search_query` 二选一，前台优先 tag 页。
+
+`profile.awards` 已存在，元素建议为：
+
+```json
+{
+  "id": "scholarship",
+  "title": "国家奖学金",
+  "image_url": "https://cdn.example.com/awards/scholarship.svg",
+  "date": "2024",
+  "description": "综合成绩与项目实践排名前列。"
+}
+```
+
+- `image_url` 为奖状大图，前台在悬停/聚焦奖项时展示；最多 50 条。
+- 视频文件不存数据库，建议扩展资源上传支持 `video/mp4`、`video/webm`，或手动上传七牛，数据库只存 URL。
+
+> 上述字段随 M5 后台可视化编辑一起实现；M4 POC 先用 `frontend/src/data/poc.ts` 的 mock 数据验证交互。
 
 ### 1.6 首页资料 `profile`（单行）
 
@@ -336,6 +402,8 @@ CREATE TABLE settings (          -- 站点名、备案号、CDN 域名、首页�
 | GET/POST/PUT/DELETE | `/api/v1/admin/todos[/{id}]` | 待办管理 |
 | POST | `/api/v1/admin/todos/reorder` | 排序 |
 | POST | `/api/v1/admin/maintenance/recalc` | 全量重算冗余字段 |
+
+> `projects.debug_steps`、`projects.architecture` 与 `profile.awards` 由后台可视化编辑；公开接口原样返回 JSON，Astro 构建时消费。视频只存 URL，文件放七牛云。
 
 ### 3.8 解散与移动的语义
 

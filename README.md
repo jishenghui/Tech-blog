@@ -1,6 +1,6 @@
 # Tech-blog
 
-个人技术博客与项目展示平台。**M1/M2/M3 已完成，下一步 M4（Astro 前台）。**
+个人技术博客与项目展示平台。**M1/M2/M3 已完成；M4 Astro 前台 POC 已完成，等待评审。**
 
 ## 文档
 
@@ -32,7 +32,7 @@
 
 ```
 backend/    Go + Gin + GORM(SQLite)，鉴权/目录/文章/标签/资源/导入/公开 API，单二进制 blog-api
-frontend/   Astro 前台（SSG，待 M4 创建）
+frontend/   Astro 前台（SSG，M4 POC 已创建）
 admin/      Vue 3 后台 SPA（待 M5 创建）
 deploy/     nginx.conf、systemd 等部署模板
 doc/        需求、设计、开发计划
@@ -56,6 +56,17 @@ go run .
 ```
 
 首次启动会自动建表、创建唯一管理员与固定一级目录，并在 `./data/blog.db` 创建 SQLite（WAL）数据库。接口与后续里程碑见 [开发计划](doc/开发计划.md)；本地环境审计见开发计划第 4 节。
+
+## 快速开始（前台 POC）
+
+```bash
+cd frontend
+nvm use 22.23.4
+npm install
+npm run dev        # http://localhost:4321/poc/
+```
+
+POC 包含三类固定页交互：项目调试流程（悬停切换说明/代码、视频悬停播放）、简历奖项悬浮、内联 SVG 架构图。详细说明见 [frontend/README.md](frontend/README.md)。
 
 ## 部署
 

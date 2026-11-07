@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 项目现状
 
-**M1/M2/M3 已完成（2026-11-07）。** `backend/` 已包含 Gin + GORM(SQLite)、JWT 鉴权、目录/文章/标签 CRUD、Markdown 渲染、七牛云图片上传、ZIP 导入与公开读接口；`frontend/`、`admin/` 尚未创建。开始任何工作前先读：
+**M1/M2/M3 已完成；M4 Astro 前台 POC 已完成（2026-11-07）。** `backend/` 已包含 Gin + GORM(SQLite)、JWT 鉴权、目录/文章/标签 CRUD、Markdown 渲染、七牛云图片上传、ZIP 导入与公开读接口；`frontend/` 已创建 Astro POC（`/poc/`），`admin/` 尚未创建。开始任何工作前先读：
 
 - `README.md` — 项目概览与架构图
 - `doc/个人博客需求文档.md` — PRD、技术选型、实施步骤
@@ -64,6 +64,8 @@ doc/        需求、设计、开发计划
 
 **资源与导入**：图片按 `sha256` 去重上传七牛云；`assets.ref_count` 按文章正文中的资源 URL 重算。删除资源仅在 `ref_count=0` 时软删除数据库记录，不删除 Kodo 对象。
 
+**固定页定制内容**：项目调试流程/架构图与简历奖项使用 `projects`/`profile` 的 JSON 字段（`debug_steps`、`architecture`、`awards`），由后台可视化编辑，Astro 构建时消费；不引入额外 Node 服务。视频等大文件放七牛云，数据库只存 URL。
+
 ## 构建与运行
 
 后端（已可运行）：
@@ -77,10 +79,18 @@ CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o blog-api .
 
 首次运行前从 `deploy/env/backend.env.example` 复制出 `backend/.env`，填写 `JWT_SECRET` 与 `ADMIN_PASSWORD_HASH`。首次启动会自动建表、创建管理员与固定一级目录。图片上传/ZIP 导入还需填写 `QINIU_ACCESS_KEY`、`QINIU_SECRET_KEY`、`QINIU_ASSET_BUCKET`、`QINIU_ASSET_DOMAIN`；未填写时上传接口返回 503，其余功能正常。`QINIU_ASSET_DOMAIN` 为绑定到资源 bucket 的 CDN 域名：七牛云测试域名通常只支持 `http://`（30 天回收），自定义 CDN 域名使用 `https://`。
 
-前台与后台（待 M4/M5）：
+前台（M4 POC 已可运行，Node 22.23.4）：
 
 ```bash
-cd frontend && npm install && npm run build
+cd frontend
+npm install
+npm run dev        # POC: http://localhost:4321/poc/
+npm run build      # 产物在 frontend/dist
+```
+
+后台（待 M5）：
+
+```bash
 cd admin && npm install && npm run build
 ```
 
@@ -106,4 +116,4 @@ cd admin && npm install && npm run build
 
 ## 下一步
 
-M1/M2/M3 已完成（`backend/`）。下一步按 `doc/开发计划.md` 的 **M4** 搭建 Astro 前台；不要同时铺开后台。任何架构变更先更新设计文档与 CLAUDE.md，再写代码。
+M1/M2/M3 已完成，M4 Astro POC 已完成（`frontend/`，`/poc/`）。下一步：评审 POC 后完成正式 M4 页面，并接入固定页 JSON 数据；后台（`admin/`）留到 M5。任何架构变更先更新设计文档与 CLAUDE.md，再写代码。
