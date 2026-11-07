@@ -1,0 +1,18 @@
+# /etc/systemd/system/blog-api.service
+[Unit]
+Description=Tech Blog API
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/blog
+ExecStart=/opt/blog/blog-api
+Restart=always
+RestartSec=3
+EnvironmentFile=-/opt/blog/.env
+Environment=HTTP_ADDR=127.0.0.1:8080
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,48 @@
+# ---- IDE / OS ----
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ---- Secrets / local env ----
+.env
+.env.*
+!.env.example
+*.local
+
+# ---- Go ----
+/backend/blog-api
+/backend/blog-api.exe
+/backend/tmp/
+/backend/data/
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+
+# ---- Node ----
+node_modules/
+.pnpm-store/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ---- Build outputs ----
+frontend/dist/
+frontend/.astro/
+admin/dist/
+dist/
+coverage/
+*.tsbuildinfo
+
+# ---- Logs / temp ----
+*.log
+logs/
+urls.txt
+urls.limited.txt
+qshell.tar.gz
+.qshell/
