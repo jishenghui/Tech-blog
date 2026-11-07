@@ -38,6 +38,9 @@ type testEnv struct {
 	tags     *service.TagService
 	assets   *service.AssetService
 	imports  *service.ImportService
+	projects *service.ProjectService
+	profiles *service.ProfileService
+	todos    *service.TodoService
 	uploader *fakeUploader
 }
 
@@ -90,6 +93,9 @@ func newTestEnv(t *testing.T) *testEnv {
 		tags:     service.NewTagService(db),
 		assets:   assetService,
 		imports:  importService,
+		projects: service.NewProjectService(db, renderer),
+		profiles: service.NewProfileService(db, renderer),
+		todos:    service.NewTodoService(db),
 		uploader: uploader,
 	}
 }

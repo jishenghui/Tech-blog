@@ -44,12 +44,18 @@ func NewWithUploader(cfg *config.Config, db *gorm.DB, tokens *auth.TokenManager,
 	tagService := service.NewTagService(db)
 	assetService := service.NewAssetService(db, uploader, cfg.QiniuAssetBucket)
 	importService := service.NewImportService(db, assetService, articleService)
+	projectService := service.NewProjectService(db, renderer)
+	profileService := service.NewProfileService(db, renderer)
+	todoService := service.NewTodoService(db)
 
 	directoryHandler := handler.NewDirectoryHandler(directoryService, articleService)
 	articleHandler := handler.NewArticleHandler(articleService)
 	tagHandler := handler.NewTagHandler(tagService, articleService)
 	assetHandler := handler.NewAssetHandler(assetService)
 	importHandler := handler.NewImportHandler(importService)
+	projectHandler := handler.NewProjectHandler(projectService)
+	profileHandler := handler.NewProfileHandler(profileService)
+	todoHandler := handler.NewTodoHandler(todoService)
 	maintenanceHandler := handler.NewMaintenanceHandler(articleService)
 
 	r.GET("/healthz", healthHandler.Check)
@@ -73,6 +79,10 @@ func NewWithUploader(cfg *config.Config, db *gorm.DB, tokens *auth.TokenManager,
 		v1.GET("/tags", tagHandler.PublicList)
 		v1.GET("/tags/:slug/articles", tagHandler.PublicArticles)
 		v1.GET("/search", articleHandler.Search)
+		v1.GET("/projects", projectHandler.PublicList)
+		v1.GET("/projects/:slug", projectHandler.PublicDetail)
+		v1.GET("/profile", profileHandler.PublicGet)
+		v1.GET("/todos", todoHandler.PublicList)
 
 		admin := v1.Group("/admin", middleware.Auth(tokens))
 		{
@@ -104,6 +114,22 @@ func NewWithUploader(cfg *config.Config, db *gorm.DB, tokens *auth.TokenManager,
 			admin.POST("/imports/zip", importHandler.UploadZip)
 			admin.GET("/imports", importHandler.List)
 			admin.GET("/imports/:id", importHandler.Detail)
+
+			admin.GET("/projects", projectHandler.AdminList)
+			admin.POST("/projects", projectHandler.Create)
+			admin.POST("/projects/reorder", projectHandler.Reorder)
+			admin.GET("/projects/:id", projectHandler.AdminDetail)
+			admin.PUT("/projects/:id", projectHandler.Update)
+			admin.DELETE("/projects/:id", projectHandler.Delete)
+
+			admin.GET("/profile", profileHandler.AdminGet)
+			admin.PUT("/profile", profileHandler.AdminUpdate)
+
+			admin.GET("/todos", todoHandler.AdminList)
+			admin.POST("/todos", todoHandler.Create)
+			admin.POST("/todos/reorder", todoHandler.Reorder)
+			admin.PUT("/todos/:id", todoHandler.Update)
+			admin.DELETE("/todos/:id", todoHandler.Delete)
 
 			admin.POST("/maintenance/recalc", maintenanceHandler.Recalc)
 		}

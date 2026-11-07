@@ -35,8 +35,34 @@ func Run(db *gorm.DB, cfg *config.Config) error {
 		if err := seedAdmin(tx, cfg); err != nil {
 			return err
 		}
-		return seedDirectories(tx)
+		if err := seedDirectories(tx); err != nil {
+			return err
+		}
+		return seedProfile(tx)
 	})
+}
+
+func seedProfile(tx *gorm.DB) error {
+	var profile model.Profile
+	err := tx.First(&profile, 1).Error
+	if err == nil {
+		return nil
+	}
+	if !errors.Is(err, gorm.ErrRecordNotFound) {
+		return fmt.Errorf("查询首页资料失败: %w", err)
+	}
+
+	profile = model.Profile{
+		ID:               1,
+		Awards:           "[]",
+		Experiences:      "[]",
+		FeaturedProjects: "[]",
+		Contacts:         "{}",
+	}
+	if err := tx.Create(&profile).Error; err != nil {
+		return fmt.Errorf("创建首页资料失败: %w", err)
+	}
+	return nil
 }
 
 func seedAdmin(tx *gorm.DB, cfg *config.Config) error {

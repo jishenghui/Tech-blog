@@ -98,23 +98,25 @@ type Asset struct {
 
 // Project 固定页面“项目”下的单个项目。
 type Project struct {
-	ID          uint           `gorm:"primaryKey" json:"id"`
-	Title       string         `gorm:"size:255;not null" json:"title"`
-	Slug        string         `gorm:"size:255;not null" json:"slug"`
-	Summary     string         `gorm:"type:text" json:"summary"`
-	ContentMD   string         `gorm:"type:text;not null;default:''" json:"content_md,omitempty"`
-	ContentHTML string         `gorm:"type:text;not null;default:''" json:"content_html,omitempty"`
-	TechStack   string         `gorm:"type:text;not null;default:'[]'" json:"tech_stack"`
-	RepoURL     string         `gorm:"size:512" json:"repo_url"`
-	DemoURL     string         `gorm:"size:512" json:"demo_url"`
-	CoverURL    string         `gorm:"size:512" json:"cover_url"`
-	SortOrder   int            `gorm:"not null;default:0" json:"sort_order"`
-	Status      string         `gorm:"size:16;not null;default:'published'" json:"status"`
-	StartedAt   *time.Time     `json:"started_at"`
-	EndedAt     *time.Time     `json:"ended_at"`
-	CreatedAt   time.Time      `json:"created_at"`
-	UpdatedAt   time.Time      `json:"updated_at"`
-	DeletedAt   gorm.DeletedAt `gorm:"index" json:"-"`
+	ID           uint           `gorm:"primaryKey" json:"id"`
+	Title        string         `gorm:"size:255;not null" json:"title"`
+	Slug         string         `gorm:"size:255;not null" json:"slug"`
+	Summary      string         `gorm:"type:text" json:"summary"`
+	ContentMD    string         `gorm:"type:text;not null;default:''" json:"content_md,omitempty"`
+	ContentHTML  string         `gorm:"type:text;not null;default:''" json:"content_html,omitempty"`
+	TechStack    string         `gorm:"type:text;not null;default:'[]'" json:"tech_stack"`
+	DebugSteps   string         `gorm:"type:text;not null;default:'[]'" json:"debug_steps"`
+	Architecture string         `gorm:"type:text;not null;default:'{}'" json:"architecture"`
+	RepoURL      string         `gorm:"size:512" json:"repo_url"`
+	DemoURL      string         `gorm:"size:512" json:"demo_url"`
+	CoverURL     string         `gorm:"size:512" json:"cover_url"`
+	SortOrder    int            `gorm:"not null;default:0" json:"sort_order"`
+	Status       string         `gorm:"size:16;not null;default:'published'" json:"status"`
+	StartedAt    *time.Time     `json:"started_at"`
+	EndedAt      *time.Time     `json:"ended_at"`
+	CreatedAt    time.Time      `json:"created_at"`
+	UpdatedAt    time.Time      `json:"updated_at"`
+	DeletedAt    gorm.DeletedAt `gorm:"index" json:"-"`
 }
 
 // Profile 首页资料，全表只有 id=1 一行。
