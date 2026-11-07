@@ -208,7 +208,7 @@ CREATE UNIQUE INDEX uk_projects_slug ON projects(slug) WHERE deleted_at IS NULL;
 - `image_url` 为奖状大图，前台在悬停/聚焦奖项时展示；最多 50 条。
 - 视频文件不存数据库，建议扩展资源上传支持 `video/mp4`、`video/webm`，或手动上传七牛，数据库只存 URL。
 
-> 上述字段随 M5 后台可视化编辑一起实现；M4 POC 先用 `frontend/src/data/poc.ts` 的 mock 数据验证交互。
+> 上述字段与公开/后台 API 已在后端实现；后台可视化编辑器在 M5 实现。M4 POC 先用 `frontend/src/data/poc.ts` 的 mock 数据验证交互，正式 M4 页面改为消费 API。
 
 ### 1.6 首页资料 `profile`（单行）
 

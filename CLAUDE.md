@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 项目现状
 
-**M1/M2/M3 已完成；M4 Astro 前台 POC 已完成（2026-11-07）。** `backend/` 已包含 Gin + GORM(SQLite)、JWT 鉴权、目录/文章/标签 CRUD、Markdown 渲染、七牛云图片上传、ZIP 导入与公开读接口；`frontend/` 已创建 Astro POC（`/poc/`），`admin/` 尚未创建。开始任何工作前先读：
+**M1/M2/M3 已完成；M4 Astro POC 与固定页 JSON API 已完成（2026-11-07）。** `backend/` 已包含 Gin + GORM(SQLite)、JWT 鉴权、目录/文章/标签 CRUD、Markdown 渲染、七牛云图片上传、ZIP 导入、固定页 JSON API（projects/profile/todos）与公开读接口；`frontend/` 已创建 Astro POC（`/poc/`），`admin/` 尚未创建。开始任何工作前先读：
 
 - `README.md` — 项目概览与架构图
 - `doc/个人博客需求文档.md` — PRD、技术选型、实施步骤
@@ -116,4 +116,4 @@ cd admin && npm install && npm run build
 
 ## 下一步
 
-M1/M2/M3 已完成，M4 Astro POC 已完成（`frontend/`，`/poc/`）。下一步：评审 POC 后完成正式 M4 页面，并接入固定页 JSON 数据；后台（`admin/`）留到 M5。任何架构变更先更新设计文档与 CLAUDE.md，再写代码。
+M1/M2/M3 已完成，M4 Astro POC 与固定页 JSON API 已完成。下一步：完成正式 M4 页面并消费 `projects`/`profile`/`todos` API；后台可视化编辑器（`admin/`）留到 M5。任何架构变更先更新设计文档与 CLAUDE.md，再写代码。
