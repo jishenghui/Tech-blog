@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 项目现状
 
-**M1/M2/M3/M4 已完成（2026-11-07）。** `backend/` 已包含 Gin + GORM(SQLite)、JWT 鉴权、目录/文章/标签 CRUD、Markdown 渲染、七牛云图片上传、ZIP 导入、固定页 JSON API（projects/profile/todos）与公开读接口；`frontend/` 已实现 Astro 全站 SSG（首页/项目/技术栈/目录/文章/待办/搜索/404/sitemap/RSS），`admin/` 尚未创建。开始任何工作前先读：
+**M1/M2/M3/M4/M5 已完成（2026-11-08）。** `backend/` 已包含 Gin + GORM(SQLite)、JWT 鉴权、目录/文章/标签 CRUD、Markdown 渲染、七牛云图片上传、ZIP 导入、固定页 JSON API（projects/profile/todos）与公开读接口；`frontend/` 已实现 Astro 全站 SSG（首页/项目/技术栈/目录/文章/待办/搜索/404/sitemap/RSS）；`admin/` 已实现 Vue 3 + Vite + Pinia 后台 SPA（登录/刷新、文章与 Vditor 编辑、目录树拖拽/解散、标签、项目固定页 JSON、首页资料、待办、ZIP 导入、修改密码）。开始任何工作前先读：
 
 - `README.md` — 项目概览与架构图
 - `doc/个人博客需求文档.md` — PRD、技术选型、实施步骤
@@ -93,11 +93,18 @@ npm run check
 
 本地 `.env` 从 `deploy/env/frontend.env.example` 复制，至少设置 `PUBLIC_API_BASE_URL=http://localhost:8080`；日出日落主题坐标用 `PUBLIC_SITE_LAT`/`PUBLIC_SITE_LNG`（默认上海）。`npm run build` 需要后端已启动；项目内 `.npmrc` 使用 npmmirror。
 
-后台（待 M5）：
+后台（M5 已完成，Node 22.23.4）：
 
 ```bash
-cd admin && npm install && npm run build
+cd admin
+nvm use 22.23.4
+npm install
+npm run dev        # http://localhost:5173
+npm run check      # vue-tsc 类型检查
+npm run build      # 产物在 admin/dist
 ```
+
+后台通过 Vite 代理 `/api` 到 `http://127.0.0.1:8080`；生产由 `admin` 子域 Nginx 同时托管 SPA 并反代 `/api/`。
 
 本地试运行规划为 Docker Compose（`backend` / `frontend` / `nginx` 三个服务），仅用于联调；生产前台由 Kodo + CDN 承载。仓库中目前还没有 `Dockerfile`、`docker-compose.yml`，需要时按需求文档阶段二创建。
 
@@ -121,4 +128,4 @@ cd admin && npm install && npm run build
 
 ## 下一步
 
-M1/M2/M3/M4 已完成。下一步：M5 搭建 Vue 3 后台可视化编辑（文章/目录/资源/固定页 JSON）；M6 发布流水线与 ECS 部署；M7 安全与上线。任何架构变更先更新设计文档与 CLAUDE.md，再写代码。
+M1–M5 已完成。下一步：M6 发布流水线（`repository_dispatch` 防抖、GitHub Actions 构建、qshell 上传 Kodo、CDN 刷新）与 ECS 部署；M7 安全与上线。任何架构变更先更新设计文档与 CLAUDE.md，再写代码。

@@ -1,6 +1,6 @@
 # Tech-blog
 
-个人技术博客与项目展示平台。**M1/M2/M3/M4 已完成；下一步 M5（Vue 后台可视化编辑）。**
+个人技术博客与项目展示平台。**M1–M5 已完成；下一步 M6（发布流水线与 ECS 部署）。**
 
 ## 文档
 
@@ -33,7 +33,7 @@
 ```
 backend/    Go + Gin + GORM(SQLite)，鉴权/目录/文章/标签/资源/导入/公开 API，单二进制 blog-api
 frontend/   Astro 前台（SSG，M4 已完成）
-admin/      Vue 3 后台 SPA（待 M5 创建）
+admin/      Vue 3 后台 SPA（M5 已完成）
 deploy/     nginx.conf、systemd 等部署模板
 doc/        需求、设计、开发计划
 ```
@@ -71,6 +71,19 @@ npm run build      # 构建时通过 API 取数，产物在 dist/
 ```
 
 前台已实现首页/简历、项目、技术栈、目录与文章、待办、搜索、404 兜底、sitemap 与 RSS，并支持浅色/深色与按日出日落自动切换的主题。三类固定页交互已集成到首页与项目页；交互原型仍可在 `/poc/` 查看。详细说明见 [frontend/README.md](frontend/README.md)。
+
+## 快速开始（后台）
+
+先启动后端，然后：
+
+```bash
+cd admin
+nvm use 22.23.4
+npm install
+npm run dev        # http://localhost:5173
+```
+
+后台通过 Vite 代理 `/api` 到 `http://127.0.0.1:8080`，支持登录/刷新、文章与 Vditor 编辑、目录树拖拽/解散、项目固定页 JSON、首页资料、待办、ZIP 导入和修改密码。详细说明见 [admin/README.md](admin/README.md)。
 
 ## 部署
 
